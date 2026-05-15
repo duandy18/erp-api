@@ -12,6 +12,8 @@ from app.app_registry.models.app_registry_system_metadata import (
     AppRegistryEndpoint,
     AppRegistryEnvironment,
     AppRegistryGatewayBinding,
+    AppRegistryHealthCheck,
+    AppRegistryOpenApiSource,
     AppRegistryRepositoryMeta,
     AppRegistryServiceClient,
     AppRegistryServicePermission,
@@ -167,6 +169,29 @@ class AppRegistrySystemProfileRepository:
                 AppRegistryServicePermission.source_app_code.asc(),
                 AppRegistryServicePermission.target_app_code.asc(),
                 AppRegistryServicePermission.permission_code.asc(),
+            )
+            .all()
+        )
+
+    def list_health_checks(self, app_code: str) -> list[AppRegistryHealthCheck]:
+        return (
+            self.db.query(AppRegistryHealthCheck)
+            .filter(AppRegistryHealthCheck.app_code == app_code)
+            .order_by(
+                AppRegistryHealthCheck.env_code.asc(),
+                AppRegistryHealthCheck.endpoint_id.asc(),
+                AppRegistryHealthCheck.check_type.asc(),
+            )
+            .all()
+        )
+
+    def list_openapi_sources(self, app_code: str) -> list[AppRegistryOpenApiSource]:
+        return (
+            self.db.query(AppRegistryOpenApiSource)
+            .filter(AppRegistryOpenApiSource.app_code == app_code)
+            .order_by(
+                AppRegistryOpenApiSource.env_code.asc(),
+                AppRegistryOpenApiSource.endpoint_id.asc(),
             )
             .all()
         )

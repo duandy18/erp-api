@@ -13,6 +13,8 @@ from app.app_registry.contracts.app_registry_system_profile_contracts import (
     SystemProfileEndpointOut,
     SystemProfileEnvironmentOut,
     SystemProfileGatewayBindingOut,
+    SystemProfileHealthCheckOut,
+    SystemProfileOpenApiSourceOut,
     SystemProfileRepositoryOut,
     SystemProfileServiceClientOut,
     SystemProfileServicePermissionOut,
@@ -26,6 +28,8 @@ from app.app_registry.models.app_registry_system_metadata import (
     AppRegistryEndpoint,
     AppRegistryEnvironment,
     AppRegistryGatewayBinding,
+    AppRegistryHealthCheck,
+    AppRegistryOpenApiSource,
     AppRegistryRepositoryMeta,
     AppRegistryServiceClient,
     AppRegistryServicePermission,
@@ -208,6 +212,37 @@ def _service_permission_out(
     )
 
 
+def _health_check_out(row: AppRegistryHealthCheck) -> SystemProfileHealthCheckOut:
+    return SystemProfileHealthCheckOut(
+        id=int(row.id),
+        app_code=str(row.app_code),
+        env_code=str(row.env_code),
+        endpoint_id=int(row.endpoint_id),
+        check_type=str(row.check_type),
+        expected_status=int(row.expected_status),
+        expected_json_path=row.expected_json_path,
+        expected_json_value=row.expected_json_value,
+        timeout_ms=int(row.timeout_ms),
+        interval_seconds=int(row.interval_seconds),
+        severity=str(row.severity),
+        is_active=bool(row.is_active),
+    )
+
+
+def _openapi_source_out(row: AppRegistryOpenApiSource) -> SystemProfileOpenApiSourceOut:
+    return SystemProfileOpenApiSourceOut(
+        id=int(row.id),
+        app_code=str(row.app_code),
+        env_code=str(row.env_code),
+        endpoint_id=int(row.endpoint_id),
+        openapi_url=str(row.openapi_url),
+        last_fetched_at=row.last_fetched_at,
+        last_checksum=row.last_checksum,
+        last_status=str(row.last_status),
+        is_active=bool(row.is_active),
+    )
+
+
 class AppRegistrySystemProfileService:
     def __init__(self, db: Session) -> None:
         self.repo = AppRegistrySystemProfileRepository(db)
@@ -253,6 +288,12 @@ class AppRegistrySystemProfileService:
             service_clients=[_service_client_out(row) for row in service_clients],
             service_permissions=[
                 _service_permission_out(row, client_by_id) for row in service_permissions
+            ],
+            health_checks=[
+                _health_check_out(row) for row in self.repo.list_health_checks(app_code)
+            ],
+            openapi_sources=[
+                _openapi_source_out(row) for row in self.repo.list_openapi_sources(app_code)
             ],
         )
 
