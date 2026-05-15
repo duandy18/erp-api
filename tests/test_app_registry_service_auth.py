@@ -62,6 +62,8 @@ def test_app_registry_profile_contract_includes_service_auth() -> None:
                 {
                     "id": 1,
                     "client_id": 1,
+                    "client_code": "wms-service",
+                    "client_name": "WMS Service Client",
                     "source_app_code": "wms",
                     "target_app_code": "pms",
                     "permission_code": "pms.read.items",
@@ -74,6 +76,8 @@ def test_app_registry_profile_contract_includes_service_auth() -> None:
 
     assert payload.service_clients[0].client_code == "wms-service"
     assert payload.service_clients[0].is_active is False
+    assert payload.service_permissions[0].client_code == "wms-service"
+    assert payload.service_permissions[0].client_name == "WMS Service Client"
     assert payload.service_permissions[0].permission_code == "pms.read.items"
 
 

@@ -143,6 +143,17 @@ class AppRegistrySystemProfileRepository:
             .all()
         )
 
+    def list_service_clients_by_ids(self, client_ids: set[int]) -> list[AppRegistryServiceClient]:
+        if not client_ids:
+            return []
+
+        return (
+            self.db.query(AppRegistryServiceClient)
+            .filter(AppRegistryServiceClient.id.in_(client_ids))
+            .order_by(AppRegistryServiceClient.client_code.asc())
+            .all()
+        )
+
     def list_service_permissions(self, app_code: str) -> list[AppRegistryServicePermission]:
         return (
             self.db.query(AppRegistryServicePermission)
