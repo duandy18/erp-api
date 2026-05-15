@@ -7,6 +7,9 @@ from app.app_registry.routers.app_registry_admin_routes import (
     router as app_registry_admin_router,
 )
 from app.app_registry.routers.app_registry_routes import router as app_registry_router
+from app.app_registry.routers.app_registry_runtime_governance_routes import (
+    router as app_registry_runtime_governance_router,
+)
 from app.app_registry.routers.app_registry_system_profile_routes import (
     router as app_registry_system_profile_router,
 )
@@ -26,6 +29,7 @@ def create_app() -> FastAPI:
     app.include_router(page_registry_router)
     app.include_router(app_registry_router)
     app.include_router(app_registry_admin_router)
+    app.include_router(app_registry_runtime_governance_router)
     app.include_router(app_registry_system_profile_router)
     app.include_router(admin_router)
     return app
