@@ -585,6 +585,130 @@ class AppRegistryDependency(Base):
     )
 
 
+class AppRegistryServiceClient(Base):
+    __tablename__ = "app_registry_service_clients"
+
+    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
+    app_code: Mapped[str] = mapped_column(
+        sa.String(64),
+        sa.ForeignKey(
+            "app_registry_apps.code",
+            name="fk_app_registry_service_clients_app_code_apps",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    client_code: Mapped[str] = mapped_column(sa.String(64), nullable=False)
+    client_name: Mapped[str] = mapped_column(sa.String(128), nullable=False)
+    auth_type: Mapped[str] = mapped_column(sa.String(32), nullable=False, server_default="none")
+    secret_ref: Mapped[str | None] = mapped_column(sa.String(128), nullable=True)
+    is_active: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.text("false"),
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "app_code",
+            "client_code",
+            name=sa.schema.conv("uq_app_registry_service_clients_app_client"),
+        ),
+        sa.CheckConstraint(
+            "auth_type IN ('none', 'static_token', 'client_credentials')",
+            name=sa.schema.conv("ck_app_registry_service_clients_auth_type_known"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(client_code)) > 0",
+            name=sa.schema.conv("ck_app_registry_service_clients_client_code_non_empty"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(client_name)) > 0",
+            name=sa.schema.conv("ck_app_registry_service_clients_client_name_non_empty"),
+        ),
+        sa.Index("ix_app_registry_service_clients_app_code", "app_code"),
+    )
+
+
+class AppRegistryServicePermission(Base):
+    __tablename__ = "app_registry_service_permissions"
+
+    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
+    client_id: Mapped[int] = mapped_column(
+        sa.Integer,
+        sa.ForeignKey(
+            "app_registry_service_clients.id",
+            name="fk_app_registry_service_permissions_client_id_clients",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    source_app_code: Mapped[str] = mapped_column(
+        sa.String(64),
+        sa.ForeignKey(
+            "app_registry_apps.code",
+            name="fk_app_registry_service_permissions_source_app_code_apps",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    target_app_code: Mapped[str] = mapped_column(
+        sa.String(64),
+        sa.ForeignKey(
+            "app_registry_apps.code",
+            name="fk_app_registry_service_permissions_target_app_code_apps",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    permission_code: Mapped[str] = mapped_column(sa.String(128), nullable=False)
+    description: Mapped[str] = mapped_column(sa.String(512), nullable=False)
+    is_active: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.text("false"),
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "client_id",
+            "permission_code",
+            name=sa.schema.conv("uq_app_registry_service_permissions_client_permission"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(permission_code)) > 0",
+            name=sa.schema.conv("ck_app_registry_service_permissions_permission_code_non_empty"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(description)) > 0",
+            name=sa.schema.conv("ck_app_registry_service_permissions_description_non_empty"),
+        ),
+        sa.Index("ix_app_registry_service_permissions_client_id", "client_id"),
+        sa.Index("ix_app_registry_service_permissions_source_app_code", "source_app_code"),
+        sa.Index("ix_app_registry_service_permissions_target_app_code", "target_app_code"),
+    )
+
+
 __all__ = [
     "AppRegistryAppEnvironment",
     "AppRegistryComponent",
@@ -594,4 +718,6 @@ __all__ = [
     "AppRegistryEnvironment",
     "AppRegistryGatewayBinding",
     "AppRegistryRepositoryMeta",
+    "AppRegistryServiceClient",
+    "AppRegistryServicePermission",
 ]

@@ -14,6 +14,8 @@ from app.app_registry.contracts.app_registry_system_profile_contracts import (
     SystemProfileEnvironmentOut,
     SystemProfileGatewayBindingOut,
     SystemProfileRepositoryOut,
+    SystemProfileServiceClientOut,
+    SystemProfileServicePermissionOut,
 )
 from app.app_registry.models.app_registry_app import AppRegistryApp
 from app.app_registry.models.app_registry_system_metadata import (
@@ -25,6 +27,8 @@ from app.app_registry.models.app_registry_system_metadata import (
     AppRegistryEnvironment,
     AppRegistryGatewayBinding,
     AppRegistryRepositoryMeta,
+    AppRegistryServiceClient,
+    AppRegistryServicePermission,
 )
 from app.app_registry.repositories.app_registry_system_profile_repository import (
     AppRegistrySystemProfileRepository,
@@ -173,6 +177,30 @@ def _dependency_out(row: AppRegistryDependency) -> SystemProfileDependencyOut:
     )
 
 
+def _service_client_out(row: AppRegistryServiceClient) -> SystemProfileServiceClientOut:
+    return SystemProfileServiceClientOut(
+        id=int(row.id),
+        app_code=str(row.app_code),
+        client_code=str(row.client_code),
+        client_name=str(row.client_name),
+        auth_type=str(row.auth_type),
+        secret_ref=row.secret_ref,
+        is_active=bool(row.is_active),
+    )
+
+
+def _service_permission_out(row: AppRegistryServicePermission) -> SystemProfileServicePermissionOut:
+    return SystemProfileServicePermissionOut(
+        id=int(row.id),
+        client_id=int(row.client_id),
+        source_app_code=str(row.source_app_code),
+        target_app_code=str(row.target_app_code),
+        permission_code=str(row.permission_code),
+        description=str(row.description),
+        is_active=bool(row.is_active),
+    )
+
+
 class AppRegistrySystemProfileService:
     def __init__(self, db: Session) -> None:
         self.repo = AppRegistrySystemProfileRepository(db)
@@ -209,6 +237,12 @@ class AppRegistrySystemProfileService:
             ],
             incoming_dependencies=[
                 _dependency_out(row) for row in self.repo.list_incoming_dependencies(app_code)
+            ],
+            service_clients=[
+                _service_client_out(row) for row in self.repo.list_service_clients(app_code)
+            ],
+            service_permissions=[
+                _service_permission_out(row) for row in self.repo.list_service_permissions(app_code)
             ],
         )
 

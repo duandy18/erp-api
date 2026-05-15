@@ -129,6 +129,26 @@ class SystemProfileDependencyOut(_SystemProfileBase):
     is_active: bool
 
 
+class SystemProfileServiceClientOut(_SystemProfileBase):
+    id: int
+    app_code: str
+    client_code: str
+    client_name: str
+    auth_type: str
+    secret_ref: str | None
+    is_active: bool
+
+
+class SystemProfileServicePermissionOut(_SystemProfileBase):
+    id: int
+    client_id: int
+    source_app_code: str
+    target_app_code: str
+    permission_code: str
+    description: str
+    is_active: bool
+
+
 class AppRegistrySystemProfileOut(_SystemProfileBase):
     app: SystemProfileAppOut
     components: list[SystemProfileComponentOut] = Field(default_factory=list)
@@ -140,6 +160,8 @@ class AppRegistrySystemProfileOut(_SystemProfileBase):
     gateway_bindings: list[SystemProfileGatewayBindingOut] = Field(default_factory=list)
     outgoing_dependencies: list[SystemProfileDependencyOut] = Field(default_factory=list)
     incoming_dependencies: list[SystemProfileDependencyOut] = Field(default_factory=list)
+    service_clients: list[SystemProfileServiceClientOut] = Field(default_factory=list)
+    service_permissions: list[SystemProfileServicePermissionOut] = Field(default_factory=list)
 
 
 class AppRegistrySystemProfilesOut(_SystemProfileBase):
