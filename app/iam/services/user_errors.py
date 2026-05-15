@@ -5,8 +5,12 @@ class AuthorizationError(Exception):
     pass
 
 
+class DuplicateUserError(Exception):
+    pass
+
+
 class NotFoundError(Exception):
     pass
 
 
-__all__ = ["AuthorizationError", "NotFoundError"]
+__all__ = ["AuthorizationError", "DuplicateUserError", "NotFoundError"]
