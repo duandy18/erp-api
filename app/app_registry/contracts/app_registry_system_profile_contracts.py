@@ -151,6 +151,18 @@ class SystemProfileServicePermissionOut(_SystemProfileBase):
     is_active: bool
 
 
+class SystemProfileHealthCheckRunOut(_SystemProfileBase):
+    id: int
+    health_check_id: int
+    started_at: datetime
+    finished_at: datetime | None
+    status: str
+    http_status: int | None
+    latency_ms: int | None
+    message: str | None
+    raw_excerpt: str | None
+
+
 class SystemProfileHealthCheckOut(_SystemProfileBase):
     id: int
     app_code: str
@@ -164,6 +176,7 @@ class SystemProfileHealthCheckOut(_SystemProfileBase):
     interval_seconds: int
     severity: str
     is_active: bool
+    latest_run: SystemProfileHealthCheckRunOut | None = None
 
 
 class SystemProfileOpenApiSourceOut(_SystemProfileBase):

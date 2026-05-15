@@ -14,6 +14,7 @@ from app.app_registry.contracts.app_registry_system_profile_contracts import (
     SystemProfileEnvironmentOut,
     SystemProfileGatewayBindingOut,
     SystemProfileHealthCheckOut,
+    SystemProfileHealthCheckRunOut,
     SystemProfileOpenApiSourceOut,
     SystemProfileRepositoryOut,
     SystemProfileServiceClientOut,
@@ -29,6 +30,7 @@ from app.app_registry.models.app_registry_system_metadata import (
     AppRegistryEnvironment,
     AppRegistryGatewayBinding,
     AppRegistryHealthCheck,
+    AppRegistryHealthCheckRun,
     AppRegistryOpenApiSource,
     AppRegistryRepositoryMeta,
     AppRegistryServiceClient,
@@ -212,7 +214,26 @@ def _service_permission_out(
     )
 
 
-def _health_check_out(row: AppRegistryHealthCheck) -> SystemProfileHealthCheckOut:
+def _health_check_run_out(row: AppRegistryHealthCheckRun) -> SystemProfileHealthCheckRunOut:
+    return SystemProfileHealthCheckRunOut(
+        id=int(row.id),
+        health_check_id=int(row.health_check_id),
+        started_at=row.started_at,
+        finished_at=row.finished_at,
+        status=str(row.status),
+        http_status=row.http_status,
+        latency_ms=row.latency_ms,
+        message=row.message,
+        raw_excerpt=row.raw_excerpt,
+    )
+
+
+def _health_check_out(
+    row: AppRegistryHealthCheck,
+    latest_run_by_health_check_id: dict[int, AppRegistryHealthCheckRun],
+) -> SystemProfileHealthCheckOut:
+    latest_run = latest_run_by_health_check_id.get(int(row.id))
+
     return SystemProfileHealthCheckOut(
         id=int(row.id),
         app_code=str(row.app_code),
@@ -226,6 +247,7 @@ def _health_check_out(row: AppRegistryHealthCheck) -> SystemProfileHealthCheckOu
         interval_seconds=int(row.interval_seconds),
         severity=str(row.severity),
         is_active=bool(row.is_active),
+        latest_run=_health_check_run_out(latest_run) if latest_run is not None else None,
     )
 
 
@@ -267,6 +289,15 @@ class AppRegistrySystemProfileService:
         permission_client_ids = {int(row.client_id) for row in service_permissions}
         permission_clients = self.repo.list_service_clients_by_ids(permission_client_ids)
         client_by_id = {int(row.id): row for row in permission_clients}
+        health_checks = self.repo.list_health_checks(app_code)
+        health_check_ids = {int(row.id) for row in health_checks}
+        latest_runs = self.repo.list_latest_health_check_runs(health_check_ids)
+        latest_run_by_health_check_id: dict[int, AppRegistryHealthCheckRun] = {}
+
+        for row in latest_runs:
+            health_check_id = int(row.health_check_id)
+            if health_check_id not in latest_run_by_health_check_id:
+                latest_run_by_health_check_id[health_check_id] = row
 
         return AppRegistrySystemProfileOut(
             app=_app_out(app),
@@ -290,7 +321,7 @@ class AppRegistrySystemProfileService:
                 _service_permission_out(row, client_by_id) for row in service_permissions
             ],
             health_checks=[
-                _health_check_out(row) for row in self.repo.list_health_checks(app_code)
+                _health_check_out(row, latest_run_by_health_check_id) for row in health_checks
             ],
             openapi_sources=[
                 _openapi_source_out(row) for row in self.repo.list_openapi_sources(app_code)
