@@ -3,9 +3,12 @@ from __future__ import annotations
 import os
 from logging.config import fileConfig
 
-from sqlalchemy import MetaData, engine_from_config, pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from app.db.base import Base
+from app.iam.models import user as user_models  # noqa: F401
+from app.page_registry.models import page_registry as page_registry_models  # noqa: F401
 
 config = context.config
 
@@ -16,7 +19,7 @@ database_url = os.getenv("ERP_DATABASE_URL")
 if database_url:
     config.set_main_option("sqlalchemy.url", database_url)
 
-target_metadata = MetaData()
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
