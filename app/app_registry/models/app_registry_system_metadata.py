@@ -437,11 +437,161 @@ class AppRegistryRepositoryMeta(Base):
     )
 
 
+class AppRegistryGatewayBinding(Base):
+    __tablename__ = "app_registry_gateway_bindings"
+
+    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
+    app_code: Mapped[str] = mapped_column(
+        sa.String(64),
+        sa.ForeignKey(
+            "app_registry_apps.code",
+            name="fk_app_registry_gateway_bindings_app_code_apps",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    env_code: Mapped[str] = mapped_column(
+        sa.String(32),
+        sa.ForeignKey(
+            "app_registry_environments.env_code",
+            name="fk_app_registry_gateway_bindings_env_code_environments",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    web_path: Mapped[str] = mapped_column(sa.String(256), nullable=False)
+    api_path: Mapped[str] = mapped_column(sa.String(256), nullable=False)
+    web_upstream_url: Mapped[str | None] = mapped_column(sa.String(512), nullable=True)
+    api_upstream_url: Mapped[str | None] = mapped_column(sa.String(512), nullable=True)
+    rewrite_mode: Mapped[str] = mapped_column(
+        sa.String(32),
+        nullable=False,
+        server_default="preserve_prefix",
+    )
+    is_published: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.text("false"),
+    )
+    published_at: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True), nullable=True)
+    is_active: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.text("true"),
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "app_code",
+            "env_code",
+            "web_path",
+            "api_path",
+            name=sa.schema.conv("uq_app_registry_gateway_bindings_app_env_paths"),
+        ),
+        sa.CheckConstraint(
+            "left(web_path, 1) = '/'",
+            name=sa.schema.conv("ck_app_registry_gateway_bindings_web_path_slash"),
+        ),
+        sa.CheckConstraint(
+            "left(api_path, 1) = '/'",
+            name=sa.schema.conv("ck_app_registry_gateway_bindings_api_path_slash"),
+        ),
+        sa.CheckConstraint(
+            "rewrite_mode IN ('preserve_prefix', 'strip_prefix')",
+            name=sa.schema.conv("ck_app_registry_gateway_bindings_rewrite_mode_known"),
+        ),
+        sa.Index("ix_app_registry_gateway_bindings_app_code", "app_code"),
+        sa.Index("ix_app_registry_gateway_bindings_env_code", "env_code"),
+    )
+
+
+class AppRegistryDependency(Base):
+    __tablename__ = "app_registry_dependencies"
+
+    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
+    source_app_code: Mapped[str] = mapped_column(
+        sa.String(64),
+        sa.ForeignKey(
+            "app_registry_apps.code",
+            name="fk_app_registry_dependencies_source_app_code_apps",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    target_app_code: Mapped[str] = mapped_column(
+        sa.String(64),
+        sa.ForeignKey(
+            "app_registry_apps.code",
+            name="fk_app_registry_dependencies_target_app_code_apps",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    dependency_type: Mapped[str] = mapped_column(sa.String(64), nullable=False)
+    description: Mapped[str] = mapped_column(sa.String(512), nullable=False)
+    is_required: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.text("true"),
+    )
+    status: Mapped[str] = mapped_column(sa.String(32), nullable=False, server_default="planned")
+    is_active: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.text("true"),
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "source_app_code",
+            "target_app_code",
+            "dependency_type",
+            name=sa.schema.conv("uq_app_registry_dependencies_source_target_type"),
+        ),
+        sa.CheckConstraint(
+            "dependency_type IN ('http_api', 'projection_feed', 'webhook', 'file_exchange')",
+            name=sa.schema.conv("ck_app_registry_dependencies_dependency_type_known"),
+        ),
+        sa.CheckConstraint(
+            "status IN ('planned', 'ready', 'deprecated')",
+            name=sa.schema.conv("ck_app_registry_dependencies_status_known"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(description)) > 0",
+            name=sa.schema.conv("ck_app_registry_dependencies_description_non_empty"),
+        ),
+        sa.Index("ix_app_registry_dependencies_source_app_code", "source_app_code"),
+        sa.Index("ix_app_registry_dependencies_target_app_code", "target_app_code"),
+    )
+
+
 __all__ = [
     "AppRegistryAppEnvironment",
     "AppRegistryComponent",
     "AppRegistryDatabase",
+    "AppRegistryDependency",
     "AppRegistryEndpoint",
     "AppRegistryEnvironment",
+    "AppRegistryGatewayBinding",
     "AppRegistryRepositoryMeta",
 ]

@@ -7,8 +7,10 @@ from app.app_registry.models.app_registry_system_metadata import (
     AppRegistryAppEnvironment,
     AppRegistryComponent,
     AppRegistryDatabase,
+    AppRegistryDependency,
     AppRegistryEndpoint,
     AppRegistryEnvironment,
+    AppRegistryGatewayBinding,
     AppRegistryRepositoryMeta,
 )
 
@@ -92,6 +94,40 @@ class AppRegistrySystemProfileRepository:
             .order_by(
                 AppRegistryRepositoryMeta.repo_type.asc(),
                 AppRegistryRepositoryMeta.repo_name.asc(),
+            )
+            .all()
+        )
+
+    def list_gateway_bindings(self, app_code: str) -> list[AppRegistryGatewayBinding]:
+        return (
+            self.db.query(AppRegistryGatewayBinding)
+            .filter(AppRegistryGatewayBinding.app_code == app_code)
+            .order_by(
+                AppRegistryGatewayBinding.env_code.asc(),
+                AppRegistryGatewayBinding.web_path.asc(),
+                AppRegistryGatewayBinding.api_path.asc(),
+            )
+            .all()
+        )
+
+    def list_outgoing_dependencies(self, app_code: str) -> list[AppRegistryDependency]:
+        return (
+            self.db.query(AppRegistryDependency)
+            .filter(AppRegistryDependency.source_app_code == app_code)
+            .order_by(
+                AppRegistryDependency.target_app_code.asc(),
+                AppRegistryDependency.dependency_type.asc(),
+            )
+            .all()
+        )
+
+    def list_incoming_dependencies(self, app_code: str) -> list[AppRegistryDependency]:
+        return (
+            self.db.query(AppRegistryDependency)
+            .filter(AppRegistryDependency.target_app_code == app_code)
+            .order_by(
+                AppRegistryDependency.source_app_code.asc(),
+                AppRegistryDependency.dependency_type.asc(),
             )
             .all()
         )

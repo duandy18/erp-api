@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -102,6 +104,31 @@ class SystemProfileRepositoryOut(_SystemProfileBase):
     is_active: bool
 
 
+class SystemProfileGatewayBindingOut(_SystemProfileBase):
+    id: int
+    app_code: str
+    env_code: str
+    web_path: str
+    api_path: str
+    web_upstream_url: str | None
+    api_upstream_url: str | None
+    rewrite_mode: str
+    is_published: bool
+    published_at: datetime | None
+    is_active: bool
+
+
+class SystemProfileDependencyOut(_SystemProfileBase):
+    id: int
+    source_app_code: str
+    target_app_code: str
+    dependency_type: str
+    description: str
+    is_required: bool
+    status: str
+    is_active: bool
+
+
 class AppRegistrySystemProfileOut(_SystemProfileBase):
     app: SystemProfileAppOut
     components: list[SystemProfileComponentOut] = Field(default_factory=list)
@@ -110,6 +137,9 @@ class AppRegistrySystemProfileOut(_SystemProfileBase):
     endpoints: list[SystemProfileEndpointOut] = Field(default_factory=list)
     databases: list[SystemProfileDatabaseOut] = Field(default_factory=list)
     repositories: list[SystemProfileRepositoryOut] = Field(default_factory=list)
+    gateway_bindings: list[SystemProfileGatewayBindingOut] = Field(default_factory=list)
+    outgoing_dependencies: list[SystemProfileDependencyOut] = Field(default_factory=list)
+    incoming_dependencies: list[SystemProfileDependencyOut] = Field(default_factory=list)
 
 
 class AppRegistrySystemProfilesOut(_SystemProfileBase):
