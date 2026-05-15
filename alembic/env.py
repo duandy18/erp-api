@@ -6,6 +6,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from app.app_registry.models import app_registry_app as app_registry_models  # noqa: F401
 from app.db.base import Base
 from app.iam.models import user as user_models  # noqa: F401
 from app.page_registry.models import page_registry as page_registry_models  # noqa: F401
