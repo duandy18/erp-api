@@ -142,6 +142,8 @@ class SystemProfileServiceClientOut(_SystemProfileBase):
 class SystemProfileServicePermissionOut(_SystemProfileBase):
     id: int
     client_id: int
+    client_code: str | None
+    client_name: str | None
     source_app_code: str
     target_app_code: str
     permission_code: str

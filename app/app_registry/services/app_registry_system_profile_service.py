@@ -189,10 +189,17 @@ def _service_client_out(row: AppRegistryServiceClient) -> SystemProfileServiceCl
     )
 
 
-def _service_permission_out(row: AppRegistryServicePermission) -> SystemProfileServicePermissionOut:
+def _service_permission_out(
+    row: AppRegistryServicePermission,
+    client_by_id: dict[int, AppRegistryServiceClient],
+) -> SystemProfileServicePermissionOut:
+    client = client_by_id.get(int(row.client_id))
+
     return SystemProfileServicePermissionOut(
         id=int(row.id),
         client_id=int(row.client_id),
+        client_code=str(client.client_code) if client is not None else None,
+        client_name=str(client.client_name) if client is not None else None,
         source_app_code=str(row.source_app_code),
         target_app_code=str(row.target_app_code),
         permission_code=str(row.permission_code),
@@ -220,6 +227,11 @@ class AppRegistrySystemProfileService:
         app_code = str(app.code)
         app_environments = self.repo.list_app_environments(app_code)
         env_codes = {row.env_code for row in app_environments}
+        service_clients = self.repo.list_service_clients(app_code)
+        service_permissions = self.repo.list_service_permissions(app_code)
+        permission_client_ids = {int(row.client_id) for row in service_permissions}
+        permission_clients = self.repo.list_service_clients_by_ids(permission_client_ids)
+        client_by_id = {int(row.id): row for row in permission_clients}
 
         return AppRegistrySystemProfileOut(
             app=_app_out(app),
@@ -238,11 +250,9 @@ class AppRegistrySystemProfileService:
             incoming_dependencies=[
                 _dependency_out(row) for row in self.repo.list_incoming_dependencies(app_code)
             ],
-            service_clients=[
-                _service_client_out(row) for row in self.repo.list_service_clients(app_code)
-            ],
+            service_clients=[_service_client_out(row) for row in service_clients],
             service_permissions=[
-                _service_permission_out(row) for row in self.repo.list_service_permissions(app_code)
+                _service_permission_out(row, client_by_id) for row in service_permissions
             ],
         )
 
