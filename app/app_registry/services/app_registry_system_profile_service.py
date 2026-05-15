@@ -9,8 +9,10 @@ from app.app_registry.contracts.app_registry_system_profile_contracts import (
     SystemProfileAppOut,
     SystemProfileComponentOut,
     SystemProfileDatabaseOut,
+    SystemProfileDependencyOut,
     SystemProfileEndpointOut,
     SystemProfileEnvironmentOut,
+    SystemProfileGatewayBindingOut,
     SystemProfileRepositoryOut,
 )
 from app.app_registry.models.app_registry_app import AppRegistryApp
@@ -18,8 +20,10 @@ from app.app_registry.models.app_registry_system_metadata import (
     AppRegistryAppEnvironment,
     AppRegistryComponent,
     AppRegistryDatabase,
+    AppRegistryDependency,
     AppRegistryEndpoint,
     AppRegistryEnvironment,
+    AppRegistryGatewayBinding,
     AppRegistryRepositoryMeta,
 )
 from app.app_registry.repositories.app_registry_system_profile_repository import (
@@ -140,6 +144,35 @@ def _repository_out(row: AppRegistryRepositoryMeta) -> SystemProfileRepositoryOu
     )
 
 
+def _gateway_binding_out(row: AppRegistryGatewayBinding) -> SystemProfileGatewayBindingOut:
+    return SystemProfileGatewayBindingOut(
+        id=int(row.id),
+        app_code=str(row.app_code),
+        env_code=str(row.env_code),
+        web_path=str(row.web_path),
+        api_path=str(row.api_path),
+        web_upstream_url=row.web_upstream_url,
+        api_upstream_url=row.api_upstream_url,
+        rewrite_mode=str(row.rewrite_mode),
+        is_published=bool(row.is_published),
+        published_at=row.published_at,
+        is_active=bool(row.is_active),
+    )
+
+
+def _dependency_out(row: AppRegistryDependency) -> SystemProfileDependencyOut:
+    return SystemProfileDependencyOut(
+        id=int(row.id),
+        source_app_code=str(row.source_app_code),
+        target_app_code=str(row.target_app_code),
+        dependency_type=str(row.dependency_type),
+        description=str(row.description),
+        is_required=bool(row.is_required),
+        status=str(row.status),
+        is_active=bool(row.is_active),
+    )
+
+
 class AppRegistrySystemProfileService:
     def __init__(self, db: Session) -> None:
         self.repo = AppRegistrySystemProfileRepository(db)
@@ -168,6 +201,15 @@ class AppRegistrySystemProfileService:
             endpoints=[_endpoint_out(row) for row in self.repo.list_endpoints(app_code)],
             databases=[_database_out(row) for row in self.repo.list_databases(app_code)],
             repositories=[_repository_out(row) for row in self.repo.list_repositories(app_code)],
+            gateway_bindings=[
+                _gateway_binding_out(row) for row in self.repo.list_gateway_bindings(app_code)
+            ],
+            outgoing_dependencies=[
+                _dependency_out(row) for row in self.repo.list_outgoing_dependencies(app_code)
+            ],
+            incoming_dependencies=[
+                _dependency_out(row) for row in self.repo.list_incoming_dependencies(app_code)
+            ],
         )
 
 
