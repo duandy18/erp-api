@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.app_registry.models.app_registry_app import AppRegistryApp
@@ -12,6 +13,8 @@ from app.app_registry.models.app_registry_system_metadata import (
     AppRegistryEnvironment,
     AppRegistryGatewayBinding,
     AppRegistryRepositoryMeta,
+    AppRegistryServiceClient,
+    AppRegistryServicePermission,
 )
 
 
@@ -128,6 +131,31 @@ class AppRegistrySystemProfileRepository:
             .order_by(
                 AppRegistryDependency.source_app_code.asc(),
                 AppRegistryDependency.dependency_type.asc(),
+            )
+            .all()
+        )
+
+    def list_service_clients(self, app_code: str) -> list[AppRegistryServiceClient]:
+        return (
+            self.db.query(AppRegistryServiceClient)
+            .filter(AppRegistryServiceClient.app_code == app_code)
+            .order_by(AppRegistryServiceClient.client_code.asc())
+            .all()
+        )
+
+    def list_service_permissions(self, app_code: str) -> list[AppRegistryServicePermission]:
+        return (
+            self.db.query(AppRegistryServicePermission)
+            .filter(
+                or_(
+                    AppRegistryServicePermission.source_app_code == app_code,
+                    AppRegistryServicePermission.target_app_code == app_code,
+                )
+            )
+            .order_by(
+                AppRegistryServicePermission.source_app_code.asc(),
+                AppRegistryServicePermission.target_app_code.asc(),
+                AppRegistryServicePermission.permission_code.asc(),
             )
             .all()
         )
