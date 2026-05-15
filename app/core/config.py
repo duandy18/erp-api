@@ -13,6 +13,14 @@ class Settings(BaseSettings):
         default="postgresql+psycopg://erp:erp@127.0.0.1:5433/erp",
         validation_alias="ERP_DATABASE_URL",
     )
+    auth_secret: str = Field(
+        default="erp-local-dev-secret-change-me",
+        validation_alias="ERP_AUTH_SECRET",
+    )
+    access_token_expire_seconds: int = Field(
+        default=7 * 24 * 60 * 60,
+        validation_alias="ERP_ACCESS_TOKEN_EXPIRE_SECONDS",
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env.local",
