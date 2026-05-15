@@ -1,0 +1,100 @@
+from __future__ import annotations
+
+from sqlalchemy.orm import Session
+
+from app.app_registry.models.app_registry_app import AppRegistryApp
+from app.app_registry.models.app_registry_system_metadata import (
+    AppRegistryAppEnvironment,
+    AppRegistryComponent,
+    AppRegistryDatabase,
+    AppRegistryEndpoint,
+    AppRegistryEnvironment,
+    AppRegistryRepositoryMeta,
+)
+
+
+class AppRegistrySystemProfileRepository:
+    def __init__(self, db: Session) -> None:
+        self.db = db
+
+    def list_apps(self) -> list[AppRegistryApp]:
+        return (
+            self.db.query(AppRegistryApp)
+            .order_by(AppRegistryApp.sort_order.asc(), AppRegistryApp.code.asc())
+            .all()
+        )
+
+    def get_app(self, app_code: str) -> AppRegistryApp | None:
+        return (
+            self.db.query(AppRegistryApp)
+            .filter(AppRegistryApp.code == app_code)
+            .one_or_none()
+        )
+
+    def list_environments(self, env_codes: set[str]) -> list[AppRegistryEnvironment]:
+        if not env_codes:
+            return []
+
+        return (
+            self.db.query(AppRegistryEnvironment)
+            .filter(AppRegistryEnvironment.env_code.in_(env_codes))
+            .order_by(
+                AppRegistryEnvironment.sort_order.asc(),
+                AppRegistryEnvironment.env_code.asc(),
+            )
+            .all()
+        )
+
+    def list_app_environments(self, app_code: str) -> list[AppRegistryAppEnvironment]:
+        return (
+            self.db.query(AppRegistryAppEnvironment)
+            .filter(AppRegistryAppEnvironment.app_code == app_code)
+            .order_by(AppRegistryAppEnvironment.env_code.asc())
+            .all()
+        )
+
+    def list_components(self, app_code: str) -> list[AppRegistryComponent]:
+        return (
+            self.db.query(AppRegistryComponent)
+            .filter(AppRegistryComponent.app_code == app_code)
+            .order_by(
+                AppRegistryComponent.sort_order.asc(),
+                AppRegistryComponent.component_code.asc(),
+            )
+            .all()
+        )
+
+    def list_endpoints(self, app_code: str) -> list[AppRegistryEndpoint]:
+        return (
+            self.db.query(AppRegistryEndpoint)
+            .filter(AppRegistryEndpoint.app_code == app_code)
+            .order_by(
+                AppRegistryEndpoint.env_code.asc(),
+                AppRegistryEndpoint.sort_order.asc(),
+                AppRegistryEndpoint.endpoint_type.asc(),
+                AppRegistryEndpoint.name.asc(),
+            )
+            .all()
+        )
+
+    def list_databases(self, app_code: str) -> list[AppRegistryDatabase]:
+        return (
+            self.db.query(AppRegistryDatabase)
+            .filter(AppRegistryDatabase.app_code == app_code)
+            .order_by(AppRegistryDatabase.env_code.asc(), AppRegistryDatabase.db_name.asc())
+            .all()
+        )
+
+    def list_repositories(self, app_code: str) -> list[AppRegistryRepositoryMeta]:
+        return (
+            self.db.query(AppRegistryRepositoryMeta)
+            .filter(AppRegistryRepositoryMeta.app_code == app_code)
+            .order_by(
+                AppRegistryRepositoryMeta.repo_type.asc(),
+                AppRegistryRepositoryMeta.repo_name.asc(),
+            )
+            .all()
+        )
+
+
+__all__ = ["AppRegistrySystemProfileRepository"]
