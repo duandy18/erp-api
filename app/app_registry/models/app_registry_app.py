@@ -5,6 +5,7 @@ from datetime import datetime
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.app_registry.models import app_registry_system_metadata  # noqa: F401
 from app.db.base import Base
 
 
@@ -19,6 +20,14 @@ class AppRegistryApp(Base):
     local_web_url: Mapped[str] = mapped_column(sa.String(256), nullable=False)
     local_api_url: Mapped[str] = mapped_column(sa.String(256), nullable=False)
     status: Mapped[str] = mapped_column(sa.String(32), nullable=False, server_default="ready")
+    domain_code: Mapped[str] = mapped_column(
+        sa.String(64),
+        nullable=False,
+        server_default="unknown",
+    )
+    app_type: Mapped[str] = mapped_column(sa.String(32), nullable=False, server_default="business")
+    owner_name: Mapped[str | None] = mapped_column(sa.String(128), nullable=True)
+    owner_contact: Mapped[str | None] = mapped_column(sa.String(128), nullable=True)
     sort_order: Mapped[int] = mapped_column(sa.Integer, nullable=False, server_default="0")
     is_active: Mapped[bool] = mapped_column(
         sa.Boolean,
@@ -60,6 +69,14 @@ class AppRegistryApp(Base):
         sa.CheckConstraint(
             "status IN ('ready', 'planned')",
             name=sa.schema.conv("ck_app_registry_apps_status_known"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(domain_code)) > 0",
+            name=sa.schema.conv("ck_app_registry_apps_domain_code_non_empty"),
+        ),
+        sa.CheckConstraint(
+            "app_type IN ('business', 'control_plane', 'gateway', 'infrastructure')",
+            name=sa.schema.conv("ck_app_registry_apps_app_type_known"),
         ),
         sa.Index("ix_app_registry_apps_active_sort", "is_active", "sort_order"),
     )
