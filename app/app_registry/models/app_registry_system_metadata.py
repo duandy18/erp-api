@@ -709,6 +709,233 @@ class AppRegistryServicePermission(Base):
     )
 
 
+class AppRegistryHealthCheck(Base):
+    __tablename__ = "app_registry_health_checks"
+
+    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
+    app_code: Mapped[str] = mapped_column(
+        sa.String(64),
+        sa.ForeignKey(
+            "app_registry_apps.code",
+            name="fk_app_registry_health_checks_app_code_apps",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    env_code: Mapped[str] = mapped_column(
+        sa.String(32),
+        sa.ForeignKey(
+            "app_registry_environments.env_code",
+            name="fk_app_registry_health_checks_env_code_environments",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    endpoint_id: Mapped[int] = mapped_column(
+        sa.Integer,
+        sa.ForeignKey(
+            "app_registry_endpoints.id",
+            name="fk_app_registry_health_checks_endpoint_id_endpoints",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    check_type: Mapped[str] = mapped_column(
+        sa.String(32),
+        nullable=False,
+        server_default="http_status",
+    )
+    expected_status: Mapped[int] = mapped_column(
+        sa.Integer,
+        nullable=False,
+        server_default="200",
+    )
+    expected_json_path: Mapped[str | None] = mapped_column(sa.String(256), nullable=True)
+    expected_json_value: Mapped[str | None] = mapped_column(sa.String(256), nullable=True)
+    timeout_ms: Mapped[int] = mapped_column(sa.Integer, nullable=False, server_default="5000")
+    interval_seconds: Mapped[int] = mapped_column(
+        sa.Integer,
+        nullable=False,
+        server_default="60",
+    )
+    severity: Mapped[str] = mapped_column(
+        sa.String(32),
+        nullable=False,
+        server_default="critical",
+    )
+    is_active: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.text("true"),
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "app_code",
+            "env_code",
+            "endpoint_id",
+            "check_type",
+            name=sa.schema.conv("uq_app_registry_health_checks_app_env_endpoint_type"),
+        ),
+        sa.CheckConstraint(
+            "check_type IN ('http_status', 'json_value')",
+            name=sa.schema.conv("ck_app_registry_health_checks_check_type_known"),
+        ),
+        sa.CheckConstraint(
+            "expected_status > 0",
+            name=sa.schema.conv("ck_app_registry_health_checks_expected_status_positive"),
+        ),
+        sa.CheckConstraint(
+            "timeout_ms > 0",
+            name=sa.schema.conv("ck_app_registry_health_checks_timeout_positive"),
+        ),
+        sa.CheckConstraint(
+            "interval_seconds > 0",
+            name=sa.schema.conv("ck_app_registry_health_checks_interval_positive"),
+        ),
+        sa.CheckConstraint(
+            "severity IN ('info', 'warning', 'critical')",
+            name=sa.schema.conv("ck_app_registry_health_checks_severity_known"),
+        ),
+        sa.Index("ix_app_registry_health_checks_app_code", "app_code"),
+        sa.Index("ix_app_registry_health_checks_env_code", "env_code"),
+        sa.Index("ix_app_registry_health_checks_endpoint_id", "endpoint_id"),
+    )
+
+
+class AppRegistryHealthCheckRun(Base):
+    __tablename__ = "app_registry_health_check_runs"
+
+    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
+    health_check_id: Mapped[int] = mapped_column(
+        sa.Integer,
+        sa.ForeignKey(
+            "app_registry_health_checks.id",
+            name="fk_app_registry_health_check_runs_health_check_id_checks",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    started_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(sa.String(32), nullable=False, server_default="pending")
+    http_status: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
+    latency_ms: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
+    message: Mapped[str | None] = mapped_column(sa.String(512), nullable=True)
+    raw_excerpt: Mapped[str | None] = mapped_column(sa.String(2048), nullable=True)
+
+    __table_args__ = (
+        sa.CheckConstraint(
+            "status IN ('pending', 'running', 'success', 'failure', 'error', 'timeout')",
+            name=sa.schema.conv("ck_app_registry_health_check_runs_status_known"),
+        ),
+        sa.CheckConstraint(
+            "http_status IS NULL OR http_status > 0",
+            name=sa.schema.conv("ck_app_registry_health_check_runs_http_status_positive"),
+        ),
+        sa.CheckConstraint(
+            "latency_ms IS NULL OR latency_ms >= 0",
+            name=sa.schema.conv("ck_app_registry_health_check_runs_latency_non_negative"),
+        ),
+        sa.Index("ix_app_registry_health_check_runs_health_check_id", "health_check_id"),
+        sa.Index("ix_app_registry_health_check_runs_started_at", "started_at"),
+        sa.Index("ix_app_registry_health_check_runs_status", "status"),
+    )
+
+
+class AppRegistryOpenApiSource(Base):
+    __tablename__ = "app_registry_openapi_sources"
+
+    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
+    app_code: Mapped[str] = mapped_column(
+        sa.String(64),
+        sa.ForeignKey(
+            "app_registry_apps.code",
+            name="fk_app_registry_openapi_sources_app_code_apps",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    env_code: Mapped[str] = mapped_column(
+        sa.String(32),
+        sa.ForeignKey(
+            "app_registry_environments.env_code",
+            name="fk_app_registry_openapi_sources_env_code_environments",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    endpoint_id: Mapped[int] = mapped_column(
+        sa.Integer,
+        sa.ForeignKey(
+            "app_registry_endpoints.id",
+            name="fk_app_registry_openapi_sources_endpoint_id_endpoints",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    openapi_url: Mapped[str] = mapped_column(sa.String(512), nullable=False)
+    last_fetched_at: Mapped[datetime | None] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=True,
+    )
+    last_checksum: Mapped[str | None] = mapped_column(sa.String(128), nullable=True)
+    last_status: Mapped[str] = mapped_column(
+        sa.String(32),
+        nullable=False,
+        server_default="unknown",
+    )
+    is_active: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.text("true"),
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "app_code",
+            "env_code",
+            "endpoint_id",
+            name=sa.schema.conv("uq_app_registry_openapi_sources_app_env_endpoint"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(openapi_url)) > 0",
+            name=sa.schema.conv("ck_app_registry_openapi_sources_url_non_empty"),
+        ),
+        sa.CheckConstraint(
+            "last_status IN ('unknown', 'success', 'failure')",
+            name=sa.schema.conv("ck_app_registry_openapi_sources_last_status_known"),
+        ),
+        sa.Index("ix_app_registry_openapi_sources_app_code", "app_code"),
+        sa.Index("ix_app_registry_openapi_sources_env_code", "env_code"),
+        sa.Index("ix_app_registry_openapi_sources_endpoint_id", "endpoint_id"),
+    )
+
+
 __all__ = [
     "AppRegistryAppEnvironment",
     "AppRegistryComponent",
@@ -717,6 +944,9 @@ __all__ = [
     "AppRegistryEndpoint",
     "AppRegistryEnvironment",
     "AppRegistryGatewayBinding",
+    "AppRegistryHealthCheck",
+    "AppRegistryHealthCheckRun",
+    "AppRegistryOpenApiSource",
     "AppRegistryRepositoryMeta",
     "AppRegistryServiceClient",
     "AppRegistryServicePermission",

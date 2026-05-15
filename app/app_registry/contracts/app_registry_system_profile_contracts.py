@@ -151,6 +151,33 @@ class SystemProfileServicePermissionOut(_SystemProfileBase):
     is_active: bool
 
 
+class SystemProfileHealthCheckOut(_SystemProfileBase):
+    id: int
+    app_code: str
+    env_code: str
+    endpoint_id: int
+    check_type: str
+    expected_status: int
+    expected_json_path: str | None
+    expected_json_value: str | None
+    timeout_ms: int
+    interval_seconds: int
+    severity: str
+    is_active: bool
+
+
+class SystemProfileOpenApiSourceOut(_SystemProfileBase):
+    id: int
+    app_code: str
+    env_code: str
+    endpoint_id: int
+    openapi_url: str
+    last_fetched_at: datetime | None
+    last_checksum: str | None
+    last_status: str
+    is_active: bool
+
+
 class AppRegistrySystemProfileOut(_SystemProfileBase):
     app: SystemProfileAppOut
     components: list[SystemProfileComponentOut] = Field(default_factory=list)
@@ -164,6 +191,8 @@ class AppRegistrySystemProfileOut(_SystemProfileBase):
     incoming_dependencies: list[SystemProfileDependencyOut] = Field(default_factory=list)
     service_clients: list[SystemProfileServiceClientOut] = Field(default_factory=list)
     service_permissions: list[SystemProfileServicePermissionOut] = Field(default_factory=list)
+    health_checks: list[SystemProfileHealthCheckOut] = Field(default_factory=list)
+    openapi_sources: list[SystemProfileOpenApiSourceOut] = Field(default_factory=list)
 
 
 class AppRegistrySystemProfilesOut(_SystemProfileBase):
