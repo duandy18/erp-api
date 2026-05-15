@@ -13,6 +13,7 @@ from app.app_registry.models.app_registry_system_metadata import (
     AppRegistryEnvironment,
     AppRegistryGatewayBinding,
     AppRegistryHealthCheck,
+    AppRegistryHealthCheckRun,
     AppRegistryOpenApiSource,
     AppRegistryRepositoryMeta,
     AppRegistryServiceClient,
@@ -181,6 +182,24 @@ class AppRegistrySystemProfileRepository:
                 AppRegistryHealthCheck.env_code.asc(),
                 AppRegistryHealthCheck.endpoint_id.asc(),
                 AppRegistryHealthCheck.check_type.asc(),
+            )
+            .all()
+        )
+
+    def list_latest_health_check_runs(
+        self,
+        health_check_ids: set[int],
+    ) -> list[AppRegistryHealthCheckRun]:
+        if not health_check_ids:
+            return []
+
+        return (
+            self.db.query(AppRegistryHealthCheckRun)
+            .filter(AppRegistryHealthCheckRun.health_check_id.in_(health_check_ids))
+            .order_by(
+                AppRegistryHealthCheckRun.health_check_id.asc(),
+                AppRegistryHealthCheckRun.started_at.desc(),
+                AppRegistryHealthCheckRun.id.desc(),
             )
             .all()
         )
