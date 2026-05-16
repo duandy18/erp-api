@@ -8,7 +8,7 @@ PORT ?= 7990
 ERP_DATABASE_URL ?= postgresql+psycopg://erp:erp@127.0.0.1:5433/erp
 export ERP_DATABASE_URL
 
-.PHONY: install lint test routes openapi db-smoke upgrade-dev alembic-current alembic-check uvicorn
+.PHONY: install lint test routes openapi db-smoke upgrade-dev alembic-current alembic-check uvicorn local-backends-up local-backends-down local-backends-restart local-backends-status
 
 install:
 > python3 -m venv .venv
@@ -41,3 +41,15 @@ alembic-check:
 
 uvicorn:
 > ERP_DATABASE_URL="$(ERP_DATABASE_URL)" $(PYTHON) -m uvicorn app.main:app --host 0.0.0.0 --port $(PORT) --reload
+
+local-backends-up:
+> $(PYTHON) scripts/dev/start_local_backends.py up
+
+local-backends-down:
+> $(PYTHON) scripts/dev/start_local_backends.py down
+
+local-backends-restart:
+> $(PYTHON) scripts/dev/start_local_backends.py restart
+
+local-backends-status:
+> $(PYTHON) scripts/dev/start_local_backends.py status
