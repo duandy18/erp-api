@@ -4,7 +4,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.app_registry.models.app_registry_app import AppRegistryApp
-from app.app_registry.models.app_registry_system_metadata import (
+from app.app_registry.models.app_registry_app_metadata import (
     AppRegistryAppEnvironment,
     AppRegistryComponent,
     AppRegistryDatabase,
@@ -21,7 +21,7 @@ from app.app_registry.models.app_registry_system_metadata import (
 )
 
 
-class AppRegistrySystemProfileRepository:
+class AppRegistryAppMetadataRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
@@ -216,4 +216,4 @@ class AppRegistrySystemProfileRepository:
         )
 
 
-__all__ = ["AppRegistrySystemProfileRepository"]
+__all__ = ["AppRegistryAppMetadataRepository"]

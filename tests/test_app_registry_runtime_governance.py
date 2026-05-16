@@ -4,10 +4,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
-from app.app_registry.contracts.app_registry_system_profile_contracts import (
-    AppRegistrySystemProfileOut,
+from app.app_registry.contracts.app_registry_app_metadata_contracts import (
+    AppRegistryAppMetadataOut,
 )
-from app.app_registry.models.app_registry_system_metadata import (
+from app.app_registry.models.app_registry_app_metadata import (
     AppRegistryHealthCheck,
     AppRegistryHealthCheckRun,
     AppRegistryOpenApiSource,
@@ -29,7 +29,7 @@ def test_app_registry_profile_contract_includes_runtime_governance() -> None:
     started_at = datetime.now(UTC)
     finished_at = datetime.now(UTC)
 
-    payload = AppRegistrySystemProfileOut.model_validate(
+    payload = AppRegistryAppMetadataOut.model_validate(
         {
             "app": {
                 "code": "wms",
@@ -98,7 +98,7 @@ def test_app_registry_profile_contract_includes_runtime_governance() -> None:
 
 
 def test_app_registry_profile_contract_defaults_latest_run_to_none() -> None:
-    payload = AppRegistrySystemProfileOut.model_validate(
+    payload = AppRegistryAppMetadataOut.model_validate(
         {
             "app": {
                 "code": "wms",
@@ -150,9 +150,9 @@ def test_app_registry_runtime_governance_migration_contains_tables_and_seed() ->
     assert "DATABASE_URL" not in migration
 
 
-def test_app_registry_system_profile_service_maps_runtime_governance_fields() -> None:
-    from app.app_registry.services.app_registry_system_profile_service import (
-        AppRegistrySystemProfileService,
+def test_app_registry_app_metadata_service_maps_runtime_governance_fields() -> None:
+    from app.app_registry.services.app_registry_app_metadata_service import (
+        AppRegistryAppMetadataService,
     )
 
     app = SimpleNamespace(
@@ -254,7 +254,7 @@ def test_app_registry_system_profile_service_maps_runtime_governance_fields() ->
         def list_openapi_sources(self, app_code: str) -> list[object]:
             return [openapi_source]
 
-    service = object.__new__(AppRegistrySystemProfileService)
+    service = object.__new__(AppRegistryAppMetadataService)
     service.repo = FakeRepo()
 
     profile = service._build_profile(app)
@@ -268,9 +268,9 @@ def test_app_registry_system_profile_service_maps_runtime_governance_fields() ->
     assert profile.openapi_sources[0].last_status == "unknown"
 
 
-def test_app_registry_system_profile_service_uses_latest_run_by_started_at_then_id() -> None:
-    from app.app_registry.services.app_registry_system_profile_service import (
-        AppRegistrySystemProfileService,
+def test_app_registry_app_metadata_service_uses_latest_run_by_started_at_then_id() -> None:
+    from app.app_registry.services.app_registry_app_metadata_service import (
+        AppRegistryAppMetadataService,
     )
 
     app = SimpleNamespace(
@@ -372,7 +372,7 @@ def test_app_registry_system_profile_service_uses_latest_run_by_started_at_then_
         def list_openapi_sources(self, app_code: str) -> list[object]:
             return []
 
-    service = object.__new__(AppRegistrySystemProfileService)
+    service = object.__new__(AppRegistryAppMetadataService)
     service.repo = FakeRepo()
 
     profile = service._build_profile(app)

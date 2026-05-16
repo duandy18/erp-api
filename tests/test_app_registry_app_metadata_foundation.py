@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.app_registry.contracts.app_registry_system_profile_contracts import (
-    AppRegistrySystemProfileOut,
-    AppRegistrySystemProfilesOut,
+from app.app_registry.contracts.app_registry_app_metadata_contracts import (
+    AppRegistryAppMetadataListOut,
+    AppRegistryAppMetadataOut,
 )
 from app.app_registry.models.app_registry_app import AppRegistryApp
-from app.app_registry.models.app_registry_system_metadata import (
+from app.app_registry.models.app_registry_app_metadata import (
     AppRegistryComponent,
     AppRegistryDatabase,
     AppRegistryEndpoint,
@@ -29,14 +29,14 @@ def _method_paths() -> set[tuple[str, str]]:
     return pairs
 
 
-def test_app_registry_system_profile_routes_are_mounted() -> None:
+def test_app_registry_app_metadata_routes_are_mounted() -> None:
     pairs = _method_paths()
 
-    assert ("GET", "/admin/app-registry/system-profile") in pairs
-    assert ("GET", "/admin/app-registry/system-profile/{app_code}") in pairs
+    assert ("GET", "/admin/app-registry/app-metadata") in pairs
+    assert ("GET", "/admin/app-registry/app-metadata/{app_code}") in pairs
 
 
-def test_app_registry_system_profile_models_are_registered() -> None:
+def test_app_registry_app_metadata_models_are_registered() -> None:
     expected_tables = {
         "app_registry_components",
         "app_registry_environments",
@@ -56,8 +56,8 @@ def test_app_registry_system_profile_models_are_registered() -> None:
     assert expected_tables.issubset(set(Base.metadata.tables))
 
 
-def test_app_registry_system_profile_contract_shape() -> None:
-    profile = AppRegistrySystemProfileOut.model_validate(
+def test_app_registry_app_metadata_contract_shape() -> None:
+    profile = AppRegistryAppMetadataOut.model_validate(
         {
             "app": {
                 "code": "wms",
@@ -88,13 +88,13 @@ def test_app_registry_system_profile_contract_shape() -> None:
     assert profile.app.domain_code == "wms"
 
 
-def test_app_registry_system_profiles_contract_shape() -> None:
-    payload = AppRegistrySystemProfilesOut.model_validate({"profiles": []})
+def test_app_registry_app_metadatas_contract_shape() -> None:
+    payload = AppRegistryAppMetadataListOut.model_validate({"profiles": []})
 
     assert payload.profiles == []
 
 
-def test_app_registry_system_profile_migration_contains_foundation_tables() -> None:
+def test_app_registry_app_metadata_migration_contains_foundation_tables() -> None:
     migration = Path(
         "alembic/versions/0006_app_registry_profile.py"
     ).read_text()

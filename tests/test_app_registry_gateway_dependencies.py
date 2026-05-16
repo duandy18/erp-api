@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.app_registry.contracts.app_registry_system_profile_contracts import (
-    AppRegistrySystemProfileOut,
+from app.app_registry.contracts.app_registry_app_metadata_contracts import (
+    AppRegistryAppMetadataOut,
 )
-from app.app_registry.models.app_registry_system_metadata import (
+from app.app_registry.models.app_registry_app_metadata import (
     AppRegistryDependency,
     AppRegistryGatewayBinding,
 )
@@ -20,7 +20,7 @@ def test_app_registry_gateway_and_dependency_models_are_registered() -> None:
 
 
 def test_app_registry_profile_contract_includes_gateway_and_dependencies() -> None:
-    payload = AppRegistrySystemProfileOut.model_validate(
+    payload = AppRegistryAppMetadataOut.model_validate(
         {
             "app": {
                 "code": "wms",

@@ -2,26 +2,26 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
-from app.app_registry.contracts.app_registry_system_profile_contracts import (
-    AppRegistrySystemProfileOut,
-    AppRegistrySystemProfilesOut,
-    SystemProfileAppEnvironmentOut,
-    SystemProfileAppOut,
-    SystemProfileComponentOut,
-    SystemProfileDatabaseOut,
-    SystemProfileDependencyOut,
-    SystemProfileEndpointOut,
-    SystemProfileEnvironmentOut,
-    SystemProfileGatewayBindingOut,
-    SystemProfileHealthCheckOut,
-    SystemProfileHealthCheckRunOut,
-    SystemProfileOpenApiSourceOut,
-    SystemProfileRepositoryOut,
-    SystemProfileServiceClientOut,
-    SystemProfileServicePermissionOut,
+from app.app_registry.contracts.app_registry_app_metadata_contracts import (
+    AppMetadataAppEnvironmentOut,
+    AppMetadataAppOut,
+    AppMetadataComponentOut,
+    AppMetadataDatabaseOut,
+    AppMetadataDependencyOut,
+    AppMetadataEndpointOut,
+    AppMetadataEnvironmentOut,
+    AppMetadataGatewayBindingOut,
+    AppMetadataHealthCheckOut,
+    AppMetadataHealthCheckRunOut,
+    AppMetadataOpenApiSourceOut,
+    AppMetadataRepositoryOut,
+    AppMetadataServiceClientOut,
+    AppMetadataServicePermissionOut,
+    AppRegistryAppMetadataListOut,
+    AppRegistryAppMetadataOut,
 )
 from app.app_registry.models.app_registry_app import AppRegistryApp
-from app.app_registry.models.app_registry_system_metadata import (
+from app.app_registry.models.app_registry_app_metadata import (
     AppRegistryAppEnvironment,
     AppRegistryComponent,
     AppRegistryDatabase,
@@ -36,17 +36,17 @@ from app.app_registry.models.app_registry_system_metadata import (
     AppRegistryServiceClient,
     AppRegistryServicePermission,
 )
-from app.app_registry.repositories.app_registry_system_profile_repository import (
-    AppRegistrySystemProfileRepository,
+from app.app_registry.repositories.app_registry_app_metadata_repository import (
+    AppRegistryAppMetadataRepository,
 )
 
 
-class AppRegistrySystemProfileNotFoundError(ValueError):
+class AppRegistryAppMetadataNotFoundError(ValueError):
     pass
 
 
-def _app_out(row: AppRegistryApp) -> SystemProfileAppOut:
-    return SystemProfileAppOut(
+def _app_out(row: AppRegistryApp) -> AppMetadataAppOut:
+    return AppMetadataAppOut(
         code=str(row.code),
         name=str(row.name),
         description=str(row.description),
@@ -64,8 +64,8 @@ def _app_out(row: AppRegistryApp) -> SystemProfileAppOut:
     )
 
 
-def _component_out(row: AppRegistryComponent) -> SystemProfileComponentOut:
-    return SystemProfileComponentOut(
+def _component_out(row: AppRegistryComponent) -> AppMetadataComponentOut:
+    return AppMetadataComponentOut(
         id=int(row.id),
         app_code=str(row.app_code),
         component_code=str(row.component_code),
@@ -78,8 +78,8 @@ def _component_out(row: AppRegistryComponent) -> SystemProfileComponentOut:
     )
 
 
-def _environment_out(row: AppRegistryEnvironment) -> SystemProfileEnvironmentOut:
-    return SystemProfileEnvironmentOut(
+def _environment_out(row: AppRegistryEnvironment) -> AppMetadataEnvironmentOut:
+    return AppMetadataEnvironmentOut(
         env_code=str(row.env_code),
         name=str(row.name),
         description=str(row.description),
@@ -88,8 +88,8 @@ def _environment_out(row: AppRegistryEnvironment) -> SystemProfileEnvironmentOut
     )
 
 
-def _app_environment_out(row: AppRegistryAppEnvironment) -> SystemProfileAppEnvironmentOut:
-    return SystemProfileAppEnvironmentOut(
+def _app_environment_out(row: AppRegistryAppEnvironment) -> AppMetadataAppEnvironmentOut:
+    return AppMetadataAppEnvironmentOut(
         id=int(row.id),
         app_code=str(row.app_code),
         env_code=str(row.env_code),
@@ -100,8 +100,8 @@ def _app_environment_out(row: AppRegistryAppEnvironment) -> SystemProfileAppEnvi
     )
 
 
-def _endpoint_out(row: AppRegistryEndpoint) -> SystemProfileEndpointOut:
-    return SystemProfileEndpointOut(
+def _endpoint_out(row: AppRegistryEndpoint) -> AppMetadataEndpointOut:
+    return AppMetadataEndpointOut(
         id=int(row.id),
         app_code=str(row.app_code),
         component_id=row.component_id,
@@ -118,8 +118,8 @@ def _endpoint_out(row: AppRegistryEndpoint) -> SystemProfileEndpointOut:
     )
 
 
-def _database_out(row: AppRegistryDatabase) -> SystemProfileDatabaseOut:
-    return SystemProfileDatabaseOut(
+def _database_out(row: AppRegistryDatabase) -> AppMetadataDatabaseOut:
+    return AppMetadataDatabaseOut(
         id=int(row.id),
         app_code=str(row.app_code),
         env_code=str(row.env_code),
@@ -138,8 +138,8 @@ def _database_out(row: AppRegistryDatabase) -> SystemProfileDatabaseOut:
     )
 
 
-def _repository_out(row: AppRegistryRepositoryMeta) -> SystemProfileRepositoryOut:
-    return SystemProfileRepositoryOut(
+def _repository_out(row: AppRegistryRepositoryMeta) -> AppMetadataRepositoryOut:
+    return AppMetadataRepositoryOut(
         id=int(row.id),
         app_code=str(row.app_code),
         component_id=row.component_id,
@@ -154,8 +154,8 @@ def _repository_out(row: AppRegistryRepositoryMeta) -> SystemProfileRepositoryOu
     )
 
 
-def _gateway_binding_out(row: AppRegistryGatewayBinding) -> SystemProfileGatewayBindingOut:
-    return SystemProfileGatewayBindingOut(
+def _gateway_binding_out(row: AppRegistryGatewayBinding) -> AppMetadataGatewayBindingOut:
+    return AppMetadataGatewayBindingOut(
         id=int(row.id),
         app_code=str(row.app_code),
         env_code=str(row.env_code),
@@ -170,8 +170,8 @@ def _gateway_binding_out(row: AppRegistryGatewayBinding) -> SystemProfileGateway
     )
 
 
-def _dependency_out(row: AppRegistryDependency) -> SystemProfileDependencyOut:
-    return SystemProfileDependencyOut(
+def _dependency_out(row: AppRegistryDependency) -> AppMetadataDependencyOut:
+    return AppMetadataDependencyOut(
         id=int(row.id),
         source_app_code=str(row.source_app_code),
         target_app_code=str(row.target_app_code),
@@ -183,8 +183,8 @@ def _dependency_out(row: AppRegistryDependency) -> SystemProfileDependencyOut:
     )
 
 
-def _service_client_out(row: AppRegistryServiceClient) -> SystemProfileServiceClientOut:
-    return SystemProfileServiceClientOut(
+def _service_client_out(row: AppRegistryServiceClient) -> AppMetadataServiceClientOut:
+    return AppMetadataServiceClientOut(
         id=int(row.id),
         app_code=str(row.app_code),
         client_code=str(row.client_code),
@@ -198,10 +198,10 @@ def _service_client_out(row: AppRegistryServiceClient) -> SystemProfileServiceCl
 def _service_permission_out(
     row: AppRegistryServicePermission,
     client_by_id: dict[int, AppRegistryServiceClient],
-) -> SystemProfileServicePermissionOut:
+) -> AppMetadataServicePermissionOut:
     client = client_by_id.get(int(row.client_id))
 
-    return SystemProfileServicePermissionOut(
+    return AppMetadataServicePermissionOut(
         id=int(row.id),
         client_id=int(row.client_id),
         client_code=str(client.client_code) if client is not None else None,
@@ -214,8 +214,8 @@ def _service_permission_out(
     )
 
 
-def _health_check_run_out(row: AppRegistryHealthCheckRun) -> SystemProfileHealthCheckRunOut:
-    return SystemProfileHealthCheckRunOut(
+def _health_check_run_out(row: AppRegistryHealthCheckRun) -> AppMetadataHealthCheckRunOut:
+    return AppMetadataHealthCheckRunOut(
         id=int(row.id),
         health_check_id=int(row.health_check_id),
         started_at=row.started_at,
@@ -231,10 +231,10 @@ def _health_check_run_out(row: AppRegistryHealthCheckRun) -> SystemProfileHealth
 def _health_check_out(
     row: AppRegistryHealthCheck,
     latest_run_by_health_check_id: dict[int, AppRegistryHealthCheckRun],
-) -> SystemProfileHealthCheckOut:
+) -> AppMetadataHealthCheckOut:
     latest_run = latest_run_by_health_check_id.get(int(row.id))
 
-    return SystemProfileHealthCheckOut(
+    return AppMetadataHealthCheckOut(
         id=int(row.id),
         app_code=str(row.app_code),
         env_code=str(row.env_code),
@@ -251,8 +251,8 @@ def _health_check_out(
     )
 
 
-def _openapi_source_out(row: AppRegistryOpenApiSource) -> SystemProfileOpenApiSourceOut:
-    return SystemProfileOpenApiSourceOut(
+def _openapi_source_out(row: AppRegistryOpenApiSource) -> AppMetadataOpenApiSourceOut:
+    return AppMetadataOpenApiSourceOut(
         id=int(row.id),
         app_code=str(row.app_code),
         env_code=str(row.env_code),
@@ -265,22 +265,22 @@ def _openapi_source_out(row: AppRegistryOpenApiSource) -> SystemProfileOpenApiSo
     )
 
 
-class AppRegistrySystemProfileService:
+class AppRegistryAppMetadataService:
     def __init__(self, db: Session) -> None:
-        self.repo = AppRegistrySystemProfileRepository(db)
+        self.repo = AppRegistryAppMetadataRepository(db)
 
-    def list_profiles(self) -> AppRegistrySystemProfilesOut:
-        return AppRegistrySystemProfilesOut(
+    def list_profiles(self) -> AppRegistryAppMetadataListOut:
+        return AppRegistryAppMetadataListOut(
             profiles=[self._build_profile(app) for app in self.repo.list_apps()]
         )
 
-    def get_profile(self, app_code: str) -> AppRegistrySystemProfileOut:
+    def get_profile(self, app_code: str) -> AppRegistryAppMetadataOut:
         app = self.repo.get_app(app_code)
         if app is None:
-            raise AppRegistrySystemProfileNotFoundError("系统档案不存在")
+            raise AppRegistryAppMetadataNotFoundError("应用主档不存在")
         return self._build_profile(app)
 
-    def _build_profile(self, app: AppRegistryApp) -> AppRegistrySystemProfileOut:
+    def _build_profile(self, app: AppRegistryApp) -> AppRegistryAppMetadataOut:
         app_code = str(app.code)
         app_environments = self.repo.list_app_environments(app_code)
         env_codes = {row.env_code for row in app_environments}
@@ -299,7 +299,7 @@ class AppRegistrySystemProfileService:
             if health_check_id not in latest_run_by_health_check_id:
                 latest_run_by_health_check_id[health_check_id] = row
 
-        return AppRegistrySystemProfileOut(
+        return AppRegistryAppMetadataOut(
             app=_app_out(app),
             components=[_component_out(row) for row in self.repo.list_components(app_code)],
             environments=[_environment_out(row) for row in self.repo.list_environments(env_codes)],
@@ -330,6 +330,6 @@ class AppRegistrySystemProfileService:
 
 
 __all__ = [
-    "AppRegistrySystemProfileNotFoundError",
-    "AppRegistrySystemProfileService",
+    "AppRegistryAppMetadataNotFoundError",
+    "AppRegistryAppMetadataService",
 ]
