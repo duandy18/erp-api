@@ -2,9 +2,11 @@
 
 PYTHON ?= .venv/bin/python3
 PORT ?= 7990
-DATABASE_URL ?= postgresql+psycopg://erp:erp@127.0.0.1:5433/erp
 
-export ERP_DATABASE_URL := $(DATABASE_URL)
+# ERP API must not derive its database from generic DATABASE_URL.
+# DATABASE_URL is commonly reused by other services and can point to WMS/PMS/OMS.
+ERP_DATABASE_URL ?= postgresql+psycopg://erp:erp@127.0.0.1:5433/erp
+export ERP_DATABASE_URL
 
 .PHONY: install lint test routes openapi db-smoke upgrade-dev alembic-current alembic-check uvicorn
 
