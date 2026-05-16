@@ -6,12 +6,12 @@ from app.admin.routers.admin_router import router as admin_router
 from app.app_registry.routers.app_registry_admin_routes import (
     router as app_registry_admin_router,
 )
+from app.app_registry.routers.app_registry_app_metadata_routes import (
+    router as app_registry_app_metadata_router,
+)
 from app.app_registry.routers.app_registry_routes import router as app_registry_router
 from app.app_registry.routers.app_registry_runtime_governance_routes import (
     router as app_registry_runtime_governance_router,
-)
-from app.app_registry.routers.app_registry_system_profile_routes import (
-    router as app_registry_system_profile_router,
 )
 from app.health.router import router as health_router
 from app.iam.routers.iam_router import router as iam_router
@@ -30,7 +30,7 @@ def create_app() -> FastAPI:
     app.include_router(app_registry_router)
     app.include_router(app_registry_admin_router)
     app.include_router(app_registry_runtime_governance_router)
-    app.include_router(app_registry_system_profile_router)
+    app.include_router(app_registry_app_metadata_router)
     app.include_router(admin_router)
     return app
 

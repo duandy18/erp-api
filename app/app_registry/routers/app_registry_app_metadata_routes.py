@@ -5,13 +5,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.app_registry.contracts.app_registry_system_profile_contracts import (
-    AppRegistrySystemProfileOut,
-    AppRegistrySystemProfilesOut,
+from app.app_registry.contracts.app_registry_app_metadata_contracts import (
+    AppRegistryAppMetadataListOut,
+    AppRegistryAppMetadataOut,
 )
-from app.app_registry.services.app_registry_system_profile_service import (
-    AppRegistrySystemProfileNotFoundError,
-    AppRegistrySystemProfileService,
+from app.app_registry.services.app_registry_app_metadata_service import (
+    AppRegistryAppMetadataNotFoundError,
+    AppRegistryAppMetadataService,
 )
 from app.db.deps import get_db
 from app.iam.deps.auth import get_current_user
@@ -35,28 +35,28 @@ def _check_admin_read(svc: UserService, current_user: User) -> None:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
-@router.get("/system-profile", response_model=AppRegistrySystemProfilesOut)
-def list_system_profiles(
+@router.get("/app-metadata", response_model=AppRegistryAppMetadataListOut)
+def list_app_metadatas(
     db: DBSessionDep,
     current_user: CurrentUserDep,
-) -> AppRegistrySystemProfilesOut:
+) -> AppRegistryAppMetadataListOut:
     user_svc = UserService(db)
     _check_admin_read(user_svc, current_user)
-    return AppRegistrySystemProfileService(db).list_profiles()
+    return AppRegistryAppMetadataService(db).list_profiles()
 
 
-@router.get("/system-profile/{app_code}", response_model=AppRegistrySystemProfileOut)
-def get_system_profile(
+@router.get("/app-metadata/{app_code}", response_model=AppRegistryAppMetadataOut)
+def get_app_metadata(
     app_code: str,
     db: DBSessionDep,
     current_user: CurrentUserDep,
-) -> AppRegistrySystemProfileOut:
+) -> AppRegistryAppMetadataOut:
     user_svc = UserService(db)
     _check_admin_read(user_svc, current_user)
 
     try:
-        return AppRegistrySystemProfileService(db).get_profile(app_code)
-    except AppRegistrySystemProfileNotFoundError as exc:
+        return AppRegistryAppMetadataService(db).get_profile(app_code)
+    except AppRegistryAppMetadataNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 

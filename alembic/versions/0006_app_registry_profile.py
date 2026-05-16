@@ -1,5 +1,5 @@
 # ruff: noqa: E501
-"""erp_app_registry_system_profile_foundation
+"""erp_app_registry_app_metadata_foundation
 
 Revision ID: 0006_app_registry_profile
 Revises: 0005_erp_app_registry_admin_page
@@ -412,10 +412,10 @@ def upgrade() -> None:
     )
     op.create_index("ix_app_registry_repositories_app_code", "app_registry_repositories", ["app_code"])
 
-    _seed_system_profile_foundation()
+    _seed_app_metadata_foundation()
 
 
-def _seed_system_profile_foundation() -> None:
+def _seed_app_metadata_foundation() -> None:
     op.execute(
         """
         UPDATE app_registry_apps

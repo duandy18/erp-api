@@ -5,11 +5,11 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class _SystemProfileBase(BaseModel):
+class _AppMetadataBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class SystemProfileAppOut(_SystemProfileBase):
+class AppMetadataAppOut(_AppMetadataBase):
     code: str
     name: str
     description: str
@@ -26,7 +26,7 @@ class SystemProfileAppOut(_SystemProfileBase):
     is_active: bool
 
 
-class SystemProfileComponentOut(_SystemProfileBase):
+class AppMetadataComponentOut(_AppMetadataBase):
     id: int
     app_code: str
     component_code: str
@@ -38,7 +38,7 @@ class SystemProfileComponentOut(_SystemProfileBase):
     sort_order: int
 
 
-class SystemProfileEnvironmentOut(_SystemProfileBase):
+class AppMetadataEnvironmentOut(_AppMetadataBase):
     env_code: str
     name: str
     description: str
@@ -46,7 +46,7 @@ class SystemProfileEnvironmentOut(_SystemProfileBase):
     is_active: bool
 
 
-class SystemProfileAppEnvironmentOut(_SystemProfileBase):
+class AppMetadataAppEnvironmentOut(_AppMetadataBase):
     id: int
     app_code: str
     env_code: str
@@ -56,7 +56,7 @@ class SystemProfileAppEnvironmentOut(_SystemProfileBase):
     notes: str | None
 
 
-class SystemProfileEndpointOut(_SystemProfileBase):
+class AppMetadataEndpointOut(_AppMetadataBase):
     id: int
     app_code: str
     component_id: int | None
@@ -72,7 +72,7 @@ class SystemProfileEndpointOut(_SystemProfileBase):
     sort_order: int
 
 
-class SystemProfileDatabaseOut(_SystemProfileBase):
+class AppMetadataDatabaseOut(_AppMetadataBase):
     id: int
     app_code: str
     env_code: str
@@ -90,7 +90,7 @@ class SystemProfileDatabaseOut(_SystemProfileBase):
     notes: str | None
 
 
-class SystemProfileRepositoryOut(_SystemProfileBase):
+class AppMetadataRepositoryOut(_AppMetadataBase):
     id: int
     app_code: str
     component_id: int | None
@@ -104,7 +104,7 @@ class SystemProfileRepositoryOut(_SystemProfileBase):
     is_active: bool
 
 
-class SystemProfileGatewayBindingOut(_SystemProfileBase):
+class AppMetadataGatewayBindingOut(_AppMetadataBase):
     id: int
     app_code: str
     env_code: str
@@ -118,7 +118,7 @@ class SystemProfileGatewayBindingOut(_SystemProfileBase):
     is_active: bool
 
 
-class SystemProfileDependencyOut(_SystemProfileBase):
+class AppMetadataDependencyOut(_AppMetadataBase):
     id: int
     source_app_code: str
     target_app_code: str
@@ -129,7 +129,7 @@ class SystemProfileDependencyOut(_SystemProfileBase):
     is_active: bool
 
 
-class SystemProfileServiceClientOut(_SystemProfileBase):
+class AppMetadataServiceClientOut(_AppMetadataBase):
     id: int
     app_code: str
     client_code: str
@@ -139,7 +139,7 @@ class SystemProfileServiceClientOut(_SystemProfileBase):
     is_active: bool
 
 
-class SystemProfileServicePermissionOut(_SystemProfileBase):
+class AppMetadataServicePermissionOut(_AppMetadataBase):
     id: int
     client_id: int
     client_code: str | None
@@ -151,7 +151,7 @@ class SystemProfileServicePermissionOut(_SystemProfileBase):
     is_active: bool
 
 
-class SystemProfileHealthCheckRunOut(_SystemProfileBase):
+class AppMetadataHealthCheckRunOut(_AppMetadataBase):
     id: int
     health_check_id: int
     started_at: datetime
@@ -163,7 +163,7 @@ class SystemProfileHealthCheckRunOut(_SystemProfileBase):
     raw_excerpt: str | None
 
 
-class SystemProfileHealthCheckOut(_SystemProfileBase):
+class AppMetadataHealthCheckOut(_AppMetadataBase):
     id: int
     app_code: str
     env_code: str
@@ -176,10 +176,10 @@ class SystemProfileHealthCheckOut(_SystemProfileBase):
     interval_seconds: int
     severity: str
     is_active: bool
-    latest_run: SystemProfileHealthCheckRunOut | None = None
+    latest_run: AppMetadataHealthCheckRunOut | None = None
 
 
-class SystemProfileOpenApiSourceOut(_SystemProfileBase):
+class AppMetadataOpenApiSourceOut(_AppMetadataBase):
     id: int
     app_code: str
     env_code: str
@@ -191,28 +191,28 @@ class SystemProfileOpenApiSourceOut(_SystemProfileBase):
     is_active: bool
 
 
-class AppRegistrySystemProfileOut(_SystemProfileBase):
-    app: SystemProfileAppOut
-    components: list[SystemProfileComponentOut] = Field(default_factory=list)
-    environments: list[SystemProfileEnvironmentOut] = Field(default_factory=list)
-    app_environments: list[SystemProfileAppEnvironmentOut] = Field(default_factory=list)
-    endpoints: list[SystemProfileEndpointOut] = Field(default_factory=list)
-    databases: list[SystemProfileDatabaseOut] = Field(default_factory=list)
-    repositories: list[SystemProfileRepositoryOut] = Field(default_factory=list)
-    gateway_bindings: list[SystemProfileGatewayBindingOut] = Field(default_factory=list)
-    outgoing_dependencies: list[SystemProfileDependencyOut] = Field(default_factory=list)
-    incoming_dependencies: list[SystemProfileDependencyOut] = Field(default_factory=list)
-    service_clients: list[SystemProfileServiceClientOut] = Field(default_factory=list)
-    service_permissions: list[SystemProfileServicePermissionOut] = Field(default_factory=list)
-    health_checks: list[SystemProfileHealthCheckOut] = Field(default_factory=list)
-    openapi_sources: list[SystemProfileOpenApiSourceOut] = Field(default_factory=list)
+class AppRegistryAppMetadataOut(_AppMetadataBase):
+    app: AppMetadataAppOut
+    components: list[AppMetadataComponentOut] = Field(default_factory=list)
+    environments: list[AppMetadataEnvironmentOut] = Field(default_factory=list)
+    app_environments: list[AppMetadataAppEnvironmentOut] = Field(default_factory=list)
+    endpoints: list[AppMetadataEndpointOut] = Field(default_factory=list)
+    databases: list[AppMetadataDatabaseOut] = Field(default_factory=list)
+    repositories: list[AppMetadataRepositoryOut] = Field(default_factory=list)
+    gateway_bindings: list[AppMetadataGatewayBindingOut] = Field(default_factory=list)
+    outgoing_dependencies: list[AppMetadataDependencyOut] = Field(default_factory=list)
+    incoming_dependencies: list[AppMetadataDependencyOut] = Field(default_factory=list)
+    service_clients: list[AppMetadataServiceClientOut] = Field(default_factory=list)
+    service_permissions: list[AppMetadataServicePermissionOut] = Field(default_factory=list)
+    health_checks: list[AppMetadataHealthCheckOut] = Field(default_factory=list)
+    openapi_sources: list[AppMetadataOpenApiSourceOut] = Field(default_factory=list)
 
 
-class AppRegistrySystemProfilesOut(_SystemProfileBase):
-    profiles: list[AppRegistrySystemProfileOut] = Field(default_factory=list)
+class AppRegistryAppMetadataListOut(_AppMetadataBase):
+    profiles: list[AppRegistryAppMetadataOut] = Field(default_factory=list)
 
 
 __all__ = [
-    "AppRegistrySystemProfileOut",
-    "AppRegistrySystemProfilesOut",
+    "AppRegistryAppMetadataOut",
+    "AppRegistryAppMetadataListOut",
 ]

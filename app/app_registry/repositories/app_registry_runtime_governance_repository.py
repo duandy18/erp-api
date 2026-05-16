@@ -3,7 +3,7 @@ from __future__ import annotations
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.app_registry.models.app_registry_system_metadata import (
+from app.app_registry.models.app_registry_app_metadata import (
     AppRegistryEndpoint,
     AppRegistryHealthCheck,
     AppRegistryHealthCheckRun,
