@@ -153,7 +153,13 @@ def test_system_monitoring_service_builds_overview_from_registry_rows() -> None:
             return [SimpleNamespace(app_code="wms", is_active=True)]
 
         def list_service_permissions(self) -> list[object]:
-            return []
+            return [
+                SimpleNamespace(
+                    source_app_code="wms",
+                    target_app_code="pms",
+                    is_active=True,
+                )
+            ]
 
         def list_health_checks(self) -> list[object]:
             return [health_check, db_health_check]
