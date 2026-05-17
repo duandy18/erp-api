@@ -11,11 +11,23 @@ from app.app_registry.contracts.app_registry_admin_contracts import (
     AppRegistryAdminAppUpdateIn,
 )
 from app.app_registry.contracts.app_registry_contracts import AppRegistryAppOut
+from app.app_registry.contracts.app_registry_self_description_sync_contracts import (
+    AppRegistrySelfDescriptionSyncRunOut,
+)
+from app.app_registry.repositories.app_registry_self_description_sync_repository import (
+    AppRegistrySelfDescriptionSyncSaveError,
+)
 from app.app_registry.services.app_registry_admin_service import (
     AppRegistryAdminService,
     AppRegistryAppNotFoundError,
     AppRegistryAppSaveError,
     DuplicateAppRegistryAppError,
+)
+from app.app_registry.services.app_registry_self_description_sync_service import (
+    AppRegistrySelfDescriptionAppNotFoundError,
+    AppRegistrySelfDescriptionFetchError,
+    AppRegistrySelfDescriptionPayloadError,
+    AppRegistrySelfDescriptionSyncService,
 )
 from app.db.deps import get_db
 from app.iam.deps.auth import get_current_user
@@ -89,6 +101,31 @@ def update_admin_registered_app(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except AppRegistryAppSaveError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post(
+    "/apps/{code}/sync-self-description",
+    response_model=AppRegistrySelfDescriptionSyncRunOut,
+)
+def sync_admin_app_self_description(
+    code: str,
+    db: DBSessionDep,
+    current_user: CurrentUserDep,
+) -> AppRegistrySelfDescriptionSyncRunOut:
+    user_svc = UserService(db)
+    _check_admin_write(user_svc, current_user)
+
+    try:
+        return AppRegistrySelfDescriptionSyncService(db).sync_app_self_description(code)
+    except AppRegistrySelfDescriptionAppNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except (
+        AppRegistrySelfDescriptionFetchError,
+        AppRegistrySelfDescriptionPayloadError,
+    ) as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except AppRegistrySelfDescriptionSyncSaveError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @router.post("/apps/{code}/enable", response_model=AppRegistryAppOut)
