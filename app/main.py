@@ -13,6 +13,9 @@ from app.app_registry.routers.app_registry_runtime_governance_routes import (
 from app.health.router import router as health_router
 from app.iam.routers.iam_router import router as iam_router
 from app.page_registry.routers.page_registry_routes import router as page_registry_router
+from app.system_monitoring.routers.system_monitoring_routes import (
+    router as system_monitoring_router,
+)
 
 
 def create_app() -> FastAPI:
@@ -27,6 +30,7 @@ def create_app() -> FastAPI:
     app.include_router(app_registry_router)
     app.include_router(app_registry_admin_router)
     app.include_router(app_registry_runtime_governance_router)
+    app.include_router(system_monitoring_router)
     app.include_router(admin_router)
     return app
 
