@@ -216,7 +216,11 @@ class SystemMonitoringService:
         health_checks_by_app = _group_by_app(health_checks)
         openapi_by_app = _group_by_app(self.repo.list_openapi_sources())
         service_clients_by_app = _group_by_app(self.repo.list_service_clients())
-        service_permissions_by_source = _group_by_app(self.repo.list_service_permissions())
+
+        service_permissions_by_app: dict[str, list[object]] = defaultdict(list)
+        for row in self.repo.list_service_permissions():
+            service_permissions_by_app[str(row.source_app_code)].append(row)
+            service_permissions_by_app[str(row.target_app_code)].append(row)
 
         dependency_by_app: dict[str, list[AppRegistryDependency]] = defaultdict(list)
         for row in self.repo.list_dependencies():
@@ -232,7 +236,7 @@ class SystemMonitoringService:
                 health_checks=health_checks_by_app[str(app.code)],
                 openapi_rows=openapi_by_app[str(app.code)],
                 service_client_rows=service_clients_by_app[str(app.code)],
-                service_permission_rows=service_permissions_by_source[str(app.code)],
+                service_permission_rows=service_permissions_by_app[str(app.code)],
                 dependency_rows=dependency_by_app[str(app.code)],
             )
             for app in apps
