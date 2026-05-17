@@ -103,6 +103,16 @@ class PageRoutePrefix(Base):
         nullable=False,
     )
     route_prefix: Mapped[str] = mapped_column(sa.String(256), nullable=False)
+    sort_order: Mapped[int] = mapped_column(
+        sa.Integer,
+        nullable=False,
+        server_default="0",
+    )
+    is_active: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.text("true"),
+    )
     created_at: Mapped[datetime] = mapped_column(
         sa.DateTime(timezone=True),
         nullable=False,
@@ -120,6 +130,7 @@ class PageRoutePrefix(Base):
             name=sa.schema.conv("ck_page_route_prefixes_route_prefix_non_empty"),
         ),
         sa.Index("ix_page_route_prefixes_page_code", "page_code"),
+        sa.Index("ix_page_route_prefixes_is_active", "is_active"),
     )
 
 

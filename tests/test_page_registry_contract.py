@@ -14,6 +14,8 @@ def test_page_registry_model_shape() -> None:
     assert PageRegistry.__table__.c.read_permission_id.nullable is True
     assert PageRegistry.__table__.c.write_permission_id.nullable is True
     assert PageRoutePrefix.__table__.c.page_code.nullable is False
+    assert PageRoutePrefix.__table__.c.sort_order.nullable is False
+    assert PageRoutePrefix.__table__.c.is_active.nullable is False
 
 
 def test_erp_navigation_contract_shape() -> None:
