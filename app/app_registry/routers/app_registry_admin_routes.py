@@ -11,6 +11,9 @@ from app.app_registry.contracts.app_registry_admin_contracts import (
     AppRegistryAdminAppUpdateIn,
 )
 from app.app_registry.contracts.app_registry_contracts import AppRegistryAppOut
+from app.app_registry.contracts.app_registry_self_description_contracts import (
+    AppRegistrySelfDescriptionOut,
+)
 from app.app_registry.contracts.app_registry_self_description_sync_contracts import (
     AppRegistrySelfDescriptionSyncRunOut,
 )
@@ -22,6 +25,10 @@ from app.app_registry.services.app_registry_admin_service import (
     AppRegistryAppNotFoundError,
     AppRegistryAppSaveError,
     DuplicateAppRegistryAppError,
+)
+from app.app_registry.services.app_registry_self_description_service import (
+    AppRegistrySelfDescriptionNotFoundError,
+    AppRegistrySelfDescriptionService,
 )
 from app.app_registry.services.app_registry_self_description_sync_service import (
     AppRegistrySelfDescriptionAppNotFoundError,
@@ -101,6 +108,24 @@ def update_admin_registered_app(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except AppRegistryAppSaveError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.get(
+    "/apps/{code}/self-description",
+    response_model=AppRegistrySelfDescriptionOut,
+)
+def get_admin_app_self_description(
+    code: str,
+    db: DBSessionDep,
+    current_user: CurrentUserDep,
+) -> AppRegistrySelfDescriptionOut:
+    user_svc = UserService(db)
+    _check_admin_read(user_svc, current_user)
+
+    try:
+        return AppRegistrySelfDescriptionService(db).get_app_self_description(code)
+    except AppRegistrySelfDescriptionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @router.post(
