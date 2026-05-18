@@ -28,6 +28,9 @@ from app.system_monitoring.routers.system_monitoring_remaining_routes import (
 from app.system_monitoring.routers.system_monitoring_routes import (
     router as system_monitoring_router,
 )
+from app.system_service_auth.routers.system_service_auth_routes import (
+    router as system_service_auth_router,
+)
 
 
 def create_app() -> FastAPI:
@@ -42,6 +45,7 @@ def create_app() -> FastAPI:
     app.include_router(app_registry_router)
     app.include_router(app_registry_admin_router)
     app.include_router(app_registry_runtime_governance_router)
+    app.include_router(system_service_auth_router)
     app.include_router(system_monitoring_router)
     app.include_router(system_monitoring_endpoint_router)
     app.include_router(system_monitoring_database_router)
