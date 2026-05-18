@@ -93,7 +93,7 @@ def default_iam_snapshot_fetcher(
 
     try:
         with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-            raw = response.read(MAX_RAW_EXCERPT_LENGTH * 16)
+            raw = response.read()
             text = raw.decode("utf-8", errors="replace")
     except urllib.error.HTTPError as exc:
         raw_excerpt = _decode_excerpt(exc.read(MAX_RAW_EXCERPT_LENGTH * 4))
