@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.app_registry.models import (
     app_registry_app_metadata,  # noqa: F401
+    app_registry_iam_projection,  # noqa: F401
     app_registry_self_description_projection,  # noqa: F401
 )
 from app.db.base import Base
