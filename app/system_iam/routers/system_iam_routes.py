@@ -10,8 +10,18 @@ from app.iam.deps.auth import get_current_user
 from app.iam.models.user import User
 from app.iam.services.user_errors import AuthorizationError
 from app.iam.services.user_service import UserService
-from app.system_iam.contracts import IndependentSystemUserPermissionsOut
-from app.system_iam.services import IndependentSystemUserPermissionsService
+from app.system_iam.contracts import (
+    IndependentSystemUserPermissionsOut,
+    SystemIamSyncRunOut,
+)
+from app.system_iam.services import (
+    IndependentSystemUserPermissionsService,
+    SystemIamSnapshotAppNotFoundError,
+    SystemIamSnapshotFetchError,
+    SystemIamSnapshotPayloadError,
+    SystemIamSnapshotSyncSaveError,
+    SystemIamSnapshotSyncService,
+)
 
 router = APIRouter(prefix="/admin/system-iam", tags=["admin-system-iam"])
 
@@ -25,6 +35,13 @@ ERP_SYSTEM_WRITE = "page.erp.system.write"
 def _check_admin_read(svc: UserService, current_user: User) -> None:
     try:
         svc.check_permission(current_user, [ERP_SYSTEM_READ, ERP_SYSTEM_WRITE])
+    except AuthorizationError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+def _check_admin_write(svc: UserService, current_user: User) -> None:
+    try:
+        svc.check_permission(current_user, [ERP_SYSTEM_WRITE])
     except AuthorizationError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
@@ -44,6 +61,31 @@ def list_independent_system_user_permissions(
     return IndependentSystemUserPermissionsService(
         db,
     ).list_independent_system_user_permissions(app_code=app_code)
+
+
+@router.post(
+    "/apps/{code}/sync-iam-snapshot",
+    response_model=SystemIamSyncRunOut,
+)
+def sync_system_iam_snapshot(
+    code: str,
+    db: DBSessionDep,
+    current_user: CurrentUserDep,
+) -> SystemIamSyncRunOut:
+    user_svc = UserService(db)
+    _check_admin_write(user_svc, current_user)
+
+    try:
+        return SystemIamSnapshotSyncService(db).sync_iam_snapshot(code)
+    except SystemIamSnapshotAppNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except (
+        SystemIamSnapshotFetchError,
+        SystemIamSnapshotPayloadError,
+    ) as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except SystemIamSnapshotSyncSaveError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 __all__ = ["router"]
