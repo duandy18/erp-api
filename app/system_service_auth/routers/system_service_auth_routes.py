@@ -20,11 +20,15 @@ from app.system_service_auth.contracts.system_service_auth_permission_contracts 
     SystemServiceAuthPermissionUpdateIn,
 )
 from app.system_service_auth.contracts.system_service_auth_write_status_contracts import (
+    SystemServiceAuthWriteRunOut,
     SystemServiceAuthWriteStatusListOut,
 )
 from app.system_service_auth.repositories.system_service_auth_permission_repository import (
     DuplicateSystemServiceAuthPermissionError,
     SystemServiceAuthPermissionSaveError,
+)
+from app.system_service_auth.repositories.system_service_auth_write_caller_repository import (
+    SystemServiceAuthWriteSaveError,
 )
 from app.system_service_auth.services.system_service_auth_capability_service import (
     SystemServiceAuthCapabilityService,
@@ -35,6 +39,13 @@ from app.system_service_auth.services.system_service_auth_permission_service imp
     SystemServiceAuthPermissionNotFoundError,
     SystemServiceAuthPermissionService,
     SystemServiceAuthPermissionValidationError,
+)
+from app.system_service_auth.services.system_service_auth_write_caller_service import (
+    SystemServiceAuthWriteCallerService,
+    SystemServiceAuthWriteClientNotFoundError,
+    SystemServiceAuthWritePermissionNotFoundError,
+    SystemServiceAuthWriteTargetAppNotFoundError,
+    SystemServiceAuthWriteTargetConfigError,
 )
 from app.system_service_auth.services.system_service_auth_write_status_service import (
     SystemServiceAuthWriteStatusService,
@@ -136,6 +147,58 @@ def update_system_service_auth_permission(
     except SystemServiceAuthPermissionValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except SystemServiceAuthPermissionSaveError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@router.post(
+    "/permissions/{permission_id}/apply",
+    response_model=SystemServiceAuthWriteRunOut,
+)
+def apply_system_service_auth_permission_to_target(
+    permission_id: int,
+    db: DBSessionDep,
+    current_user: CurrentUserDep,
+) -> SystemServiceAuthWriteRunOut:
+    user_svc = UserService(db)
+    _check_admin_write(user_svc, current_user)
+
+    try:
+        return SystemServiceAuthWriteCallerService(db).apply_permission(permission_id)
+    except (
+        SystemServiceAuthWritePermissionNotFoundError,
+        SystemServiceAuthWriteClientNotFoundError,
+        SystemServiceAuthWriteTargetAppNotFoundError,
+    ) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except SystemServiceAuthWriteTargetConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except SystemServiceAuthWriteSaveError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@router.post(
+    "/permissions/{permission_id}/verify",
+    response_model=SystemServiceAuthWriteRunOut,
+)
+def verify_system_service_auth_permission_on_target(
+    permission_id: int,
+    db: DBSessionDep,
+    current_user: CurrentUserDep,
+) -> SystemServiceAuthWriteRunOut:
+    user_svc = UserService(db)
+    _check_admin_write(user_svc, current_user)
+
+    try:
+        return SystemServiceAuthWriteCallerService(db).verify_permission(permission_id)
+    except (
+        SystemServiceAuthWritePermissionNotFoundError,
+        SystemServiceAuthWriteClientNotFoundError,
+        SystemServiceAuthWriteTargetAppNotFoundError,
+    ) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except SystemServiceAuthWriteTargetConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except SystemServiceAuthWriteSaveError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
