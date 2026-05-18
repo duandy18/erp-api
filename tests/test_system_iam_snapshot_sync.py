@@ -228,3 +228,65 @@ def test_system_iam_snapshot_sync_service_writes_projection_rows() -> None:
     assert repo.pages[0].read_permission_code == "page.wms.read"
 
     assert repo.route_prefixes[0].route_prefix == "/wms"
+
+
+def test_default_iam_snapshot_fetcher_reads_full_large_success_payload(monkeypatch) -> None:
+    import json
+
+    from app.system_iam.services import iam_snapshot_sync_service as module
+
+    payload = {
+        "app_code": "wms",
+        "app_name": "仓储管理",
+        "snapshot_at": datetime.now(UTC).isoformat(),
+        "users": [],
+        "permissions": [],
+        "user_permissions": [],
+        "page_registry": [
+            {
+                "page_code": f"wms.large.{index}",
+                "page_name": "大响应页面" * 20,
+                "parent_page_code": None,
+                "level": 1,
+                "domain_code": "wms",
+                "show_in_topbar": True,
+                "show_in_sidebar": True,
+                "inherit_permissions": False,
+                "read_permission_code": "page.wms.read",
+                "write_permission_code": "page.wms.write",
+                "sort_order": index,
+                "is_active": True,
+            }
+            for index in range(420)
+        ],
+        "page_route_prefixes": [],
+    }
+    raw = json.dumps(payload).encode("utf-8")
+    assert len(raw) > module.MAX_RAW_EXCERPT_LENGTH * 16
+
+    class FakeResponse:
+        def __enter__(self) -> FakeResponse:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+        def read(self, *args: object) -> bytes:
+            if args:
+                return raw[: int(args[0])]
+            return raw
+
+    def fake_urlopen(_request: object, timeout: float) -> FakeResponse:
+        assert timeout > 0
+        return FakeResponse()
+
+    monkeypatch.setattr(module.urllib.request, "urlopen", fake_urlopen)
+
+    result = module.default_iam_snapshot_fetcher(
+        "http://127.0.0.1:8000/system/read/v1/iam-snapshot",
+        5.0,
+        {"X-Service-Client": "erp-service"},
+    )
+
+    assert result["app_code"] == "wms"
+    assert len(result["page_registry"]) == 420
