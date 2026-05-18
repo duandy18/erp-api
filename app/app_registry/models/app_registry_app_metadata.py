@@ -435,6 +435,77 @@ class AppRegistryServicePermission(Base):
     )
 
 
+class AppRegistryServicePermissionWriteRun(Base):
+    __tablename__ = "app_registry_service_permission_write_runs"
+
+    id: Mapped[int] = mapped_column(sa.BigInteger, primary_key=True, autoincrement=True)
+    permission_id: Mapped[int] = mapped_column(
+        sa.Integer,
+        sa.ForeignKey(
+            "app_registry_service_permissions.id",
+            name="fk_app_registry_service_permission_write_runs_permission_id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    source_app_code: Mapped[str] = mapped_column(sa.String(64), nullable=False)
+    target_app_code: Mapped[str] = mapped_column(sa.String(64), nullable=False)
+    client_code: Mapped[str | None] = mapped_column(sa.String(64), nullable=True)
+    permission_code: Mapped[str] = mapped_column(sa.String(128), nullable=False)
+    operation: Mapped[str] = mapped_column(sa.String(32), nullable=False, server_default="upsert")
+    status: Mapped[str] = mapped_column(sa.String(32), nullable=False, server_default="pending")
+    started_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.text("now()"),
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True), nullable=True)
+    target_base_url: Mapped[str | None] = mapped_column(sa.String(255), nullable=True)
+    http_status: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+    raw_excerpt: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+
+    __table_args__ = (
+        sa.CheckConstraint(
+            "operation IN ('upsert', 'disable', 'verify')",
+            name=sa.schema.conv("ck_svc_perm_write_runs_operation"),
+        ),
+        sa.CheckConstraint(
+            "status IN ('pending', 'running', 'success', 'failure', 'skipped')",
+            name=sa.schema.conv("ck_svc_perm_write_runs_status"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(source_app_code)) > 0",
+            name=sa.schema.conv("ck_svc_perm_write_runs_source"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(target_app_code)) > 0",
+            name=sa.schema.conv("ck_svc_perm_write_runs_target"),
+        ),
+        sa.CheckConstraint(
+            "length(trim(permission_code)) > 0",
+            name=sa.schema.conv("ck_svc_perm_write_runs_permission"),
+        ),
+        sa.CheckConstraint(
+            "http_status IS NULL OR http_status > 0",
+            name=sa.schema.conv("ck_svc_perm_write_runs_http_status"),
+        ),
+        sa.Index(
+            "ix_app_registry_service_permission_write_runs_permission_id",
+            "permission_id",
+        ),
+        sa.Index(
+            "ix_app_registry_service_permission_write_runs_target_status",
+            "target_app_code",
+            "status",
+        ),
+        sa.Index(
+            "ix_app_registry_service_permission_write_runs_started_at",
+            "started_at",
+        ),
+    )
+
+
 class AppRegistryHealthCheck(Base):
     __tablename__ = "app_registry_health_checks"
 
@@ -656,4 +727,5 @@ __all__ = [
     "AppRegistryOpenApiSource",
     "AppRegistryServiceClient",
     "AppRegistryServicePermission",
+    "AppRegistryServicePermissionWriteRun",
 ]

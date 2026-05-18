@@ -19,6 +19,9 @@ from app.system_service_auth.contracts.system_service_auth_permission_contracts 
     SystemServiceAuthPermissionOut,
     SystemServiceAuthPermissionUpdateIn,
 )
+from app.system_service_auth.contracts.system_service_auth_write_status_contracts import (
+    SystemServiceAuthWriteStatusListOut,
+)
 from app.system_service_auth.repositories.system_service_auth_permission_repository import (
     DuplicateSystemServiceAuthPermissionError,
     SystemServiceAuthPermissionSaveError,
@@ -32,6 +35,9 @@ from app.system_service_auth.services.system_service_auth_permission_service imp
     SystemServiceAuthPermissionNotFoundError,
     SystemServiceAuthPermissionService,
     SystemServiceAuthPermissionValidationError,
+)
+from app.system_service_auth.services.system_service_auth_write_status_service import (
+    SystemServiceAuthWriteStatusService,
 )
 
 router = APIRouter(prefix="/admin/system-service-auth", tags=["admin-system-service-auth"])
@@ -131,6 +137,17 @@ def update_system_service_auth_permission(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except SystemServiceAuthPermissionSaveError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@router.get("/write-status", response_model=SystemServiceAuthWriteStatusListOut)
+def list_system_service_auth_write_status(
+    db: DBSessionDep,
+    current_user: CurrentUserDep,
+) -> SystemServiceAuthWriteStatusListOut:
+    user_svc = UserService(db)
+    _check_admin_read(user_svc, current_user)
+
+    return SystemServiceAuthWriteStatusService(db).list_write_status()
 
 
 __all__ = ["router"]
